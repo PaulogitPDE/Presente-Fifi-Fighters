@@ -48,7 +48,7 @@
     return c;
   }
   function clean(s) {
-    return String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
+    return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
   }
   // Desenha texto. opts: {scale, align:'left'|'center'|'right', shadow:color}
   function text(ctx, str, x, y, color, opts) {

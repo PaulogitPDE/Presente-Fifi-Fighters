@@ -48,9 +48,10 @@
     onGround() { return this.y >= 0; }
     height() { return (this.crouching || this.state === 'knockdown' ? 36 : 58) * (this.ch.scale || 1); }
     hurtbox() {
-      if (this.state === 'knockdown' || this.state === 'ko') return { x: this.x - 22, y: GROUND + this.y - 10, w: 44, h: 10 };
+      if (this.state === 'knockdown' || this.state === 'ko') return { x: this.x - 34, y: GROUND + this.y - 14, w: 68, h: 14 };
       const h = this.height();
-      return { x: this.x - 11, y: GROUND + this.y - h, w: 22, h };
+      const hw = 9 * (this.ch.scale || 1);
+      return { x: this.x - hw, y: GROUND + this.y - h, w: hw * 2, h };
     }
     canAct() { return ['idle', 'walk', 'crouch', 'jump'].includes(this.state) && !(this.state === 'jump' && this.move); }
     forwardHeld() { return this.ctrl.held(this.facing === 1 ? 'right' : 'left'); }
@@ -435,18 +436,18 @@
     draw(ctx, camX) {
       const p = this.pose();
       let tint = null;
-      if (this.flashT > 0 && this.flashT % 2) tint = [255, 255, 255];
-      else if (this.buff > 0) tint = (this.t >> 2) % 2 ? [100, 255, 60] : null;
-      else if (this.poison > 0) tint = (this.t >> 3) % 2 ? [120, 200, 80] : null;
-      else if (this.vuln > 0) tint = (this.t >> 3) % 3 === 0 ? [255, 220, 60] : null;
+      if (this.flashT > 0 && this.flashT % 2) tint = [255, 255, 255, 0.75];
+      else if (this.buff > 0) tint = (this.t >> 2) % 2 ? [100, 255, 60, 0.35] : null;
+      else if (this.poison > 0) tint = (this.t >> 3) % 2 ? [120, 200, 80, 0.35] : null;
+      else if (this.vuln > 0) tint = (this.t >> 3) % 3 === 0 ? [255, 220, 60, 0.35] : null;
       Sprites.render(this.canvas, this.ch, p, this.anim, tint);
       const sx = Math.round(this.x - camX), sy = Math.round(GROUND + this.y);
       // sombra
       ctx.fillStyle = 'rgba(0,0,0,0.3)';
-      const sw = Math.max(10, 30 + this.y / 4);
+      const sw = Math.max(14, 44 * (this.ch.scale || 1) / 1.45 + this.y / 4);
       ctx.fillRect(Math.round(sx - sw / 2), GROUND - 1, Math.round(sw), 3);
       // kart
-      if (this.move && this.move.def && this.move.def.fx === 'kart' && this.state === 'special') drawKart(ctx, sx, sy, this.facing, this.t);
+      if (this.move && this.move.def && this.move.def.fx === 'kart' && this.state === 'special') { ctx.save(); ctx.translate(sx, sy); ctx.scale(1.5, 1.5); drawKart(ctx, 0, 0, this.facing, this.t); ctx.restore(); }
       if (this.inv > 0 && this.state === 'getup' && (this.t % 4 < 2)) ctx.globalAlpha = 0.7;
       ctx.save();
       ctx.translate(sx, sy);
@@ -458,7 +459,7 @@
       if (p.heart) { for (let i = 0; i < 3; i++) heart(ctx, sx + Math.sin(this.t / 10 + i * 2) * 14, sy - 70 - ((this.t + i * 20) % 60) / 2); }
       // textos
       this.texts.forEach((tx, i) => {
-        Font.text(ctx, tx.s, sx, sy - 82 - tx.t * 0.4 - i * 9, tx.color, { align: 'center', outline: '#000000' });
+        Font.text(ctx, tx.s, sx, sy - 66 * (this.ch.scale || 1) - 8 - tx.t * 0.4 - i * 9, tx.color, { align: 'center', outline: '#000000' });
       });
     }
   }

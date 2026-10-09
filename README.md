@@ -37,15 +37,18 @@ Modos: 1 jogador (contra a CPU, em 3 dificuldades) e 2 jogadores no mesmo teclad
 
 Cada um tem a própria animação parada, de vitória e frases de entrada e de vitória.
 
+Os tamanhos seguem a altura real de cada um: PV 1,90 · Ana 1,80 · Guti 1,75 · Alex e Valesca 1,70 · Pam, Min e Belipe 1,60.
+Na seleção de personagens, os retratos grandes são pixel art feita a partir das fotos.
+
 ## Cenários
 
-Subway · Parque das Águas · Prefeitura de Sorocaba · Etec Armando Panunzio · Cinema ·
-Copa na Casa da Min · Rolê Noturno · Aleatório.
+Subway · Parque das Águas · Prefeitura de Sorocaba (Palácio dos Tropeiros) · Etec Armando Panunzio · Cinema ·
+Copa na Casa da Min · Noite do Hambúrguer · Rolê Noturno · Aleatório.
 Os Fifis que não estão lutando aparecem torcendo no fundo.
 
 ## Estrutura
 
-Tudo é desenhado por código (sprites, cenários, fonte e música chiptune), então não há imagens nem áudio externos.
+Sprites, cenários, fonte e música chiptune são gerados por código. As únicas imagens são os retratos em `assets/portraits/`.
 
 - `js/characters.js`: visual, golpes e falas de cada personagem (fácil de ajustar cores, cabelo, óculos etc.)
 - `js/sprites.js`: renderizador de pixel art; `js/poses.js`: animações
