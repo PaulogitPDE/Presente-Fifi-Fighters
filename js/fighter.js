@@ -424,6 +424,33 @@
       }
       return Poses.idle(ch, t);
     }
+    sheetState() {
+      const m = this.move;
+      const ph = (d, f, A) => f < d.startup ? [0, f / d.startup] : f < d.startup + A ? [1, (f - d.startup) / A] : [2, Math.min(1, (f - d.startup - A) / (d.recovery || 1))];
+      switch (this.state) {
+        case 'idle': return { kind: 'idle' };
+        case 'walk': return { kind: 'walk', dir: this.vx * this.facing > 0 ? 1 : -1 };
+        case 'crouch': return { kind: 'crouch' };
+        case 'jump':
+          if (m && m.normal) { const [phase, k] = ph(m.def, m.f, m.def.active); return { kind: m.kind, phase, k }; }
+          return { kind: 'jump', up: this.vy < 0 };
+        case 'attack': { const [phase, k] = ph(m.def, m.f, m.def.active); return { kind: m.kind, phase, k }; }
+        case 'special': {
+          const d = m.def, [phase, k] = ph(d, m.f, d.dur || d.window || 12);
+          if (d.type === 'rising' && !this.onGround() && m.f > d.startup + 14) return { kind: 'jump', up: false };
+          return { kind: 'special', pose: d.pose, phase, k };
+        }
+        case 'block': return { kind: 'block', crouch: this.crouching };
+        case 'hit': return { kind: 'hit', k: Math.min(1, this.stun / 10), crouch: this.crouching };
+        case 'airhit': return { kind: 'airhit' };
+        case 'knockdown': return { kind: 'lying' };
+        case 'getup': return { kind: 'getup', k: this.st / 16 };
+        case 'ko': return this.onGround() && this.st > 10 ? { kind: 'lying' } : { kind: 'airhit' };
+        case 'win': return { kind: 'win' };
+        case 'intro': return { kind: this.st < 50 ? 'intro' : 'idle' };
+      }
+      return { kind: 'idle' };
+    }
     normalPose() {
       const m = this.move, d = m.def;
       let phase, k;
@@ -440,8 +467,9 @@
       else if (this.buff > 0) tint = (this.t >> 2) % 2 ? [100, 255, 60, 0.35] : null;
       else if (this.poison > 0) tint = (this.t >> 3) % 2 ? [120, 200, 80, 0.35] : null;
       else if (this.vuln > 0) tint = (this.t >> 3) % 3 === 0 ? [255, 220, 60, 0.35] : null;
-      Sprites.render(this.canvas, this.ch, p, this.anim, tint);
       const sx = Math.round(this.x - camX), sy = Math.round(GROUND + this.y);
+      const useSheet = window.SheetSprites && SheetSprites.ready(this.ch);
+      if (!useSheet) Sprites.render(this.canvas, this.ch, p, this.anim, tint);
       // sombra
       ctx.fillStyle = 'rgba(0,0,0,0.3)';
       const sw = Math.max(14, 44 * (this.ch.scale || 1) / 1.45 + this.y / 4);
@@ -449,11 +477,14 @@
       // kart
       if (this.move && this.move.def && this.move.def.fx === 'kart' && this.state === 'special') { ctx.save(); ctx.translate(sx, sy); ctx.scale(1.5, 1.5); drawKart(ctx, 0, 0, this.facing, this.t); ctx.restore(); }
       if (this.inv > 0 && this.state === 'getup' && (this.t % 4 < 2)) ctx.globalAlpha = 0.7;
-      ctx.save();
-      ctx.translate(sx, sy);
-      if (this.facing === -1) ctx.scale(-1, 1);
-      ctx.drawImage(this.canvas, -Sprites.OX, -Sprites.OY);
-      ctx.restore();
+      if (useSheet) SheetSprites.draw(ctx, this.ch, this.sheetState(), this.anim, sx, sy, this.facing, 1, tint);
+      else {
+        ctx.save();
+        ctx.translate(sx, sy);
+        if (this.facing === -1) ctx.scale(-1, 1);
+        ctx.drawImage(this.canvas, -Sprites.OX, -Sprites.OY);
+        ctx.restore();
+      }
       ctx.globalAlpha = 1;
       if (p.flash) { ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fillRect(sx + this.facing * 18 - 6, sy - 66, 12, 12); }
       if (p.heart) { for (let i = 0; i < 3; i++) heart(ctx, sx + Math.sin(this.t / 10 + i * 2) * 14, sy - 70 - ((this.t + i * 20) % 60) / 2); }

@@ -11,6 +11,7 @@
   const CH = window.CHARACTERS;
   const byId = id => CH.find(c => c.id === id);
   Sprites.loadPortraits(CH);
+  if (window.SheetSprites) SheetSprites.load(CH);
 
   // ---------- Escala da tela ----------
   function resize() {
@@ -51,7 +52,8 @@
     }
   }
   const previewCanvases = {};
-  function drawCharAt(ch, x, y, pose, scale, key, flip) {
+  function drawCharAt(ch, x, y, pose, scale, key, flip, st) {
+    if (st && window.SheetSprites && SheetSprites.draw(ctx, ch, st, G.t, x, y, flip ? -1 : 1, scale)) return;
     key = key || ch.id;
     if (!previewCanvases[key]) previewCanvases[key] = Sprites.newCanvas();
     const cv = previewCanvases[key];
@@ -77,7 +79,7 @@
     // desfile de personagens
     CH.forEach((ch, i) => {
       const x = 30 + i * 46;
-      drawCharAt(ch, x, 214, Poses.idle(ch, G.t + i * 40), 1, 'title' + ch.id, i >= 4);
+      drawCharAt(ch, x, 214, Poses.idle(ch, G.t + i * 40), 1, 'title' + ch.id, i >= 4, { kind: 'idle' });
     });
     logo(W / 2, 6, 3);
     T('O JOGO DE LUTA DOS FIFIS', W / 2, 56, '#9ff0ff', { align: 'center', shadow: '#000' });
@@ -162,7 +164,7 @@
       // gradiente na base
       for (let i = 0; i < 70; i++) R(px, 144 + i, 112, 1, 'rgba(0,0,0,' + Math.min(0.85, i / 50) + ')');
       const pose = G.locked[p] ? Poses.victory(ch, G.t - G.lockT[p]) : Poses.idle(ch, G.t);
-      drawCharAt(ch, px + 56, 212, pose, 1, 'sel' + p, p === 1);
+      drawCharAt(ch, px + 56, 212, pose, 1, 'sel' + p, p === 1, { kind: G.locked[p] ? 'win' : 'idle' });
       T(ch.name, px + 4, 16, cursorCol[p] === '#ff3a3a' ? '#ff8a8a' : '#8ab8ff', { scale: 2, outline: '#000' });
       T(ch.title, px + 4, 33, '#ffffff', { outline: '#000' });
       T('ALTURA ' + ch.height.toFixed(2).replace('.', ',') + 'M', px + 4, 43, '#ffd400', { outline: '#000' });
@@ -442,6 +444,7 @@
       const ch = G.spectators[i % G.spectators.length]; if (!ch) return;
       const cv = G.specCanvas[i % G.specCanvas.length];
       const cheer = G.phase === 'ko' || (G.combos[0] && G.combos[0].n > 2) || (G.combos[1] && G.combos[1].n > 2);
+      if (window.SheetSprites && SheetSprites.draw(ctx, ch, { kind: cheer ? 'win' : 'idle' }, G.time + i * 60, sp.x, sp.y, sp.x > 288 ? -1 : 1, sp.s, [24, 20, 44, 0.5])) return;
       if (G.time % 2 === 0) Sprites.render(cv, ch, cheer ? Poses.victory(ch, G.time) : Poses.idle(ch, G.time + i * 60), G.time, [24, 20, 44, 0.55]);
       const s = sp.s;
       ctx.save(); ctx.translate(sp.x, sp.y); if (sp.x > 288) ctx.scale(-1, 1);
@@ -579,8 +582,8 @@
     if (wi >= 0) {
       const f = G.fighters[wi], l = G.fighters[1 - wi];
       R(7, 31, 114, 126, '#000'); vgradPanel(8, 32, '#4a2a6a', '#140a24'); photoOr(f.ch, 'big', 8, 32, 112, 124);
-      drawCharAt(f.ch, 120, 208, Poses.victory(f.ch, G.t), 1, 'res');
-      drawCharAt(l.ch, 330, 212, Poses.lying(), 1, 'resL');
+      drawCharAt(f.ch, 120, 208, Poses.victory(f.ch, G.t), 1, 'res', false, { kind: 'win' });
+      drawCharAt(l.ch, 330, 212, Poses.lying(), 1, 'resL', false, { kind: 'lying' });
       T(f.ch.name + ' VENCEU!', W / 2 + 40, 16, '#ffd400', { scale: 2, align: 'center', outline: '#000' });
       // balão
       R(176, 40, 200, 50, '#ffffff'); R(170, 56, 8, 6, '#ffffff'); R(178, 42, 196, 46, '#ffffff');
