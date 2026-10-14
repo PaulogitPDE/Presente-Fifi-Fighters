@@ -50,7 +50,7 @@
     hurtbox() {
       if (this.state === 'knockdown' || this.state === 'ko') return { x: this.x - 34, y: GROUND + this.y - 14, w: 68, h: 14 };
       const h = this.height();
-      const hw = 9 * (this.ch.scale || 1);
+      const hw = 12.5;
       return { x: this.x - hw, y: GROUND + this.y - h, w: hw * 2, h };
     }
     canAct() { return ['idle', 'walk', 'crouch', 'jump'].includes(this.state) && !(this.state === 'jump' && this.move); }
