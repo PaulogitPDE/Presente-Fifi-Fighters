@@ -1,11 +1,14 @@
 // Entrada: teclado e controles (gamepad).
 // P1: WASD + V/B/N   |   P2: setas + 1/2/3 (linha de cima ou teclado numérico)
 // Controle: direcional/analógico, A = soco, B = chute, X ou Y = poder, RB = super, START = pausa
+// Celular (js/remote.js): botões virtuais Rem<p><botão>, somados ao teclado e ao controle
 (function () {
+  const BTNS = ['up', 'down', 'left', 'right', 'punch', 'kick', 'power', 'super', 'start'];
   const MAP = [
     { up: ['KeyW', 'Pad0Up'], down: ['KeyS', 'Pad0Down'], left: ['KeyA', 'Pad0Left'], right: ['KeyD', 'Pad0Right'], punch: ['KeyV', 'Pad0A'], kick: ['KeyB', 'Pad0B'], power: ['KeyN', 'Pad0X', 'Pad0Y'], start: ['Pad0Start'], super: ['Pad0RB'] },
     { up: ['ArrowUp', 'Pad1Up'], down: ['ArrowDown', 'Pad1Down'], left: ['ArrowLeft', 'Pad1Left'], right: ['ArrowRight', 'Pad1Right'], punch: ['Digit1', 'Numpad1', 'Pad1A'], kick: ['Digit2', 'Numpad2', 'Pad1B'], power: ['Digit3', 'Numpad3', 'Pad1X', 'Pad1Y'], start: ['Pad1Start'], super: ['Pad1RB'] }
   ];
+  MAP.forEach((m, p) => BTNS.forEach(b => m[b].push('Rem' + p + b)));
   const down = {};
   const pressedAt = {}; // code -> frame
   let frame = 0;
@@ -25,7 +28,7 @@
   function pollPads() {
     let pads = [];
     try { pads = navigator.getGamepads ? Array.from(navigator.getGamepads()) : []; } catch (e) { pads = []; }
-    padsSeen = pads.length;
+    padsSeen = pads.filter(Boolean).length;
     for (let p = 0; p < 2; p++) {
       const gp = pads[p];
       for (const name in PAD_BTNS) {
@@ -64,7 +67,10 @@
       return MAP[p][btn].some(c => pressedAt[c] === frame);
     },
     anyKey() { return anyPressed.length > 0 && pressedAt[anyPressed[0]] === frame; },
-    lastKey() { return anyPressed.length ? anyPressed[anyPressed.length - 1] : null; }
+    lastKey() { return anyPressed.length ? anyPressed[anyPressed.length - 1] : null; },
+    // celular: bits na ordem de BTNS (cima, baixo, esq, dir, soco, chute, poder, super, start)
+    BTNS,
+    remote(p, bits) { BTNS.forEach((b, i) => { const c = 'Rem' + p + b; if (bits & (1 << i)) press(c); else if (down[c]) release(c); }); }
   };
   window.Input = Input;
 })();

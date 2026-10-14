@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#14101c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Fifi Fighters - Controle</title>
+<link rel="stylesheet" href="css/controller.css">
+</head>
+<body>
+<!-- tela de conexão (sem código no link) -->
+<section id="join" hidden>
+  <div class="join-box">
+    <div class="logo"><span class="l1">FIFI</span><span class="l2">FIGHTERS</span></div>
+    <p>Digite o código da sala que aparece na tela do notebook</p>
+    <form id="joinForm" autocomplete="off">
+      <input id="codeIn" maxlength="4" placeholder="ABCD" autocapitalize="characters" spellcheck="false" inputmode="text">
+      <button type="submit">ENTRAR</button>
+    </form>
+    <a class="play-here" href="index.html?jogo=1">jogar neste aparelho</a>
+  </div>
+</section>
+
+<!-- controle -->
+<main id="pad" hidden>
+  <div class="snes">
+    <div class="shoulder l" data-b="power"><span>L</span></div>
+    <div class="shoulder r" data-b="super"><span>R</span></div>
+
+    <div class="wing left">
+      <div class="dpad-well">
+        <div id="dpad" class="dpad">
+          <i class="arm up"></i><i class="arm down"></i><i class="arm left"></i><i class="arm right"></i><i class="hub"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="center">
+      <div id="status" class="status"><b class="dot"></b><span id="statusTxt">CONECTANDO...</span></div>
+      <div class="logo small"><span class="l1">FIFI</span><span class="l2">FIGHTERS</span></div>
+      <div class="sys">
+        <div class="pill-wrap"><div class="pill" data-b="kick"></div><label>SELECT</label></div>
+        <div class="pill-wrap"><div class="pill" data-b="start"></div><label>START</label></div>
+      </div>
+      <div id="info" class="info"></div>
+    </div>
+
+    <div class="wing right">
+      <div class="face-well">
+        <div class="btn x" data-b="super"><span>X</span><em>SUPER</em></div>
+        <div class="btn y" data-b="punch"><span>Y</span><em>SOCO</em></div>
+        <div class="btn a" data-b="power"><span>A</span><em>PODER</em></div>
+        <div class="btn b" data-b="kick"><span>B</span><em>CHUTE</em></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="rotate"><div class="phone-ico"></div><p>Gire o celular</p></div>
+<div id="msg" hidden></div>
+
+<script src="js/vendor/peerjs.min.js"></script>
+<script src="js/controller.js"></script>
+</body>
+</html>

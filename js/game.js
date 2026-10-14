@@ -98,6 +98,55 @@
     R(x, y, w, 1, '#ffd400'); R(x, y + h - 1, w, 1, '#5a3a8a');
     if (title) { R(x, y, w, 12, '#2a1450'); T(title, x + w / 2, y + 3, '#ffd400', { align: 'center' }); }
   }
+  // ---------- celular como controle ----------
+  const RM = () => window.Remote;
+  function slotDots(x, y, align) {
+    const r = RM(); if (!r) return;
+    const parts = [0, 1].map(p => ['P' + (p + 1) + (r.connected(p) ? ' OK' : ' --'), r.connected(p) ? (p ? '#6aa8ff' : '#ff6a6a') : '#7a7090']);
+    const total = Font.width(parts[0][0] + '  ' + parts[1][0]);
+    let cx = align === 'right' ? x - total : (align === 'center' ? x - total / 2 : x);
+    parts.forEach(([txt, col]) => { T(txt, cx, y, col, { shadow: '#000' }); cx += Font.width(txt + '  ') + 1; });
+  }
+  // QR do controle no canto (scale = tamanho do módulo em pixels)
+  function drawPhoneQR(right, bottom, scale) {
+    const r = RM();
+    if (!r || !r.canShare()) { T('CELULAR: ABRA O JOGO PELO SITE', right, bottom - 7, '#6a5a9a', { align: 'right' }); return; }
+    const q = r.qr();
+    if (!q || r.status !== 'ready') { T('CELULAR: ' + r.statusText(), right, bottom - 7, '#6a5a9a', { align: 'right' }); return; }
+    const w = q.width * scale, x = right - w, y = bottom - w;
+    R(x - 1, y - 1, w + 2, w + 2, '#5a3a8a');
+    ctx.drawImage(q, x, y, w, w);
+    T('CONTROLE NO CELULAR', right, y - 20, '#ffd400', { align: 'right', shadow: '#000' });
+    T('SALA ' + r.code, right, y - 10, '#9ff0ff', { align: 'right', shadow: '#000' });
+    slotDots(right, y - 31, 'right');
+  }
+  function phone() {
+    starBg('#0a1424', '#2a3a6a');
+    T('CONTROLE NO CELULAR', W / 2, 8, '#ffd400', { scale: 2, align: 'center', outline: '#000' });
+    const r = RM();
+    const lines = ['1. CELULAR NA MESMA WI-FI', '2. APONTE A CAMERA PRO QR CODE', '3. O PRIMEIRO QUE ENTRAR E O P1,', '   O SEGUNDO E O P2', '', 'O TECLADO CONTINUA FUNCIONANDO.', 'NO CELULAR: Y SOCO  B CHUTE', 'A PODER  X/R SUPER  START PAUSA'];
+    lines.forEach((l, i) => T(l, 14, 40 + i * 11, i < 4 ? '#ffffff' : '#9ff0ff', { shadow: '#000' }));
+    if (r && r.canShare() && r.qr() && r.status === 'ready') {
+      const q = r.qr(), sc = Math.max(2, Math.floor(132 / q.width)), w = q.width * sc;
+      R(W - 18 - w - 2, 34, w + 4, w + 4, '#000'); ctx.drawImage(q, W - 16 - w, 36, w, w);
+      T('SALA ' + r.code, W - 16 - w / 2, 40 + w + 4, '#ffd400', { align: 'center', shadow: '#000' });
+      T('OU DIGITE O CODIGO EM', 14, 140, '#8a80a8'); T((r.url || '').replace(/^https?:\/\//, '').replace(/controle\.html.*$/, 'controle.html'), 14, 150, '#8a80a8');
+    } else T(r ? (r.canShare() ? r.statusText() : 'ABRA O JOGO PELO SITE (NAO PELO ARQUIVO)') : 'INDISPONIVEL', W - 100, 90, '#ff8a8a', { align: 'center', shadow: '#000' });
+    slotDots(14, 176, 'left');
+    T('CHUTE OU ESC VOLTA', W / 2, 202, '#6a6088', { align: 'center' });
+    if (backKey() || (G.t > 10 && confirmKey())) { Sound.play('select'); go('title'); }
+  }
+  function drawToasts() {
+    const r = RM(); if (!r || !r.toasts.length) return;
+    r.toasts.forEach((t, i) => {
+      t.t++;
+      const y = G.scene === 'fight' ? 46 + i * 12 : H - 16 - i * 12, w = Font.width(t.s) + 10;
+      R(W / 2 - w / 2, y - 2, w, 11, 'rgba(0,0,0,0.75)');
+      T(t.s, W / 2, y, t.col, { align: 'center' });
+    });
+    r.toasts = r.toasts.filter(t => t.t < 150);
+  }
+
   // seta de direção em pixel (para o histórico de comandos)
   function arrow(x, y, dx, dy, col) {
     ctx.fillStyle = col;
@@ -170,11 +219,13 @@
       { label: 'TREINO', act: () => startSelect('training') },
       { label: 'LISTA DE GOLPES', act: () => { G.moveTab = 0; go('moves'); } },
       { label: 'COMO JOGAR', act: () => go('howto') },
+      { label: 'CONTROLE NO CELULAR', act: () => go('phone') },
       { label: 'OPCOES', act: () => go('options') },
       { label: 'CREDITOS', act: () => go('credits') }
-    ], G.menu, W / 2, 70, { w: 150, lh: 11 });
+    ], G.menu, W / 2, 69, { w: 150, lh: 10 });
     T('M: SOM  F: TELA CHEIA', W - 4, 4, '#6a5a9a', { align: 'right' });
     if (Input.pads()) T('CONTROLE CONECTADO: ' + Input.pads(), 4, 4, '#7ad07a');
+    if (RM() && (RM().connected(0) || RM().connected(1))) slotDots(4, Input.pads() ? 14 : 4, 'left');
     if (G.save.arcadeHigh) T('RECORDE ARCADE ' + G.save.arcadeHigh, W / 2, 166, '#ffd400', { align: 'center', shadow: '#000' });
   }
 
@@ -533,6 +584,7 @@
     else c2 = new AICtrl(G.opts.difficulty);
     G.fighters = [new Fighter(a, 0, new HumanCtrl(0)), new Fighter(b, 1, c2)];
     G.fighters.forEach(f => { f.meter = 0; f.perfects = 0; });
+    if (RM()) { RM().setInfo(0, a.name); RM().setInfo(1, G.mode === '2p' ? b.name : 'CPU JOGANDO'); }
     if (a.id === b.id) G.fighters[1].alt = true;
     G.training = G.mode === 'training' ? (G.training || { dummy: 'stand', meter: 'inf', regen: true, hitboxes: false, inputs: true }) : null;
     if (G.training) { G.training.noKO = true; G.training.lastDmg = 0; G.training.comboDmg = 0; G.training.combo = 0; G.training.maxCombo = 0; G.inputLog = []; applyDummy(); }
@@ -997,7 +1049,7 @@
   }
 
   // ---------- Laço principal ----------
-  const SCENES = { title, options, howto, moves, credits, select, stage: stageSel, ladder, continue: arcadeContinue, gameover, ending, vs, fight, result };
+  const SCENES = { phone, title, options, howto, moves, credits, select, stage: stageSel, ladder, continue: arcadeContinue, gameover, ending, vs, fight, result };
   let last = performance.now(), acc = 0;
   const STEP = 1000 / 60;
   let started = false;
@@ -1013,6 +1065,7 @@
         G.t++;
         SCENES[G.scene]();
       }
+      drawToasts();
       Input.tick();
     }
     requestAnimationFrame(frame);
@@ -1023,6 +1076,7 @@
     logo(W / 2, 50, 4);
     if ((G.t >> 5) % 2) T('APERTE QUALQUER TECLA', W / 2, 140, '#ffffff', { align: 'center' });
     T('UM PRESENTE PARA OS FIFIS', W / 2, 196, '#555', { align: 'center' });
+    drawPhoneQR(W - 6, H - 6, 2);
     if (Input.anyKey()) begin();
   }
   function begin() { if (started) return; started = true; Sound.init(); Sound.setVolumes(G.opts.music / 10, G.opts.sfx / 10); go('title'); }
@@ -1030,7 +1084,10 @@
   // o áudio só pode começar num gesto do usuário (controle e ESC não contam)
   ['keydown', 'pointerdown', 'touchend'].forEach(ev => addEventListener(ev, () => { if (started) Sound.init(); }));
   // pausa automática ao trocar de aba ou janela
-  window.addEventListener('blur', () => { if (G.scene === 'fight' && !G.paused && G.phase !== 'ko' && G.phase !== 'timeover') { G.paused = true; G.pause = { view: 'main', i: 0, tab: 0 }; } });
+  const autoPause = () => { if (G.scene === 'fight' && !G.paused && G.phase !== 'ko' && G.phase !== 'timeover') { G.paused = true; G.pause = { view: 'main', i: 0, tab: 0 }; } };
+  window.addEventListener('blur', autoPause);
+  // celular caiu no meio da luta: pausa até ele voltar
+  if (RM()) RM().onDrop = p => { if (p === 0 || G.mode === '2p') autoPause(); };
   function toggleFull() {
     try {
       if (!document.fullscreenElement) document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {});

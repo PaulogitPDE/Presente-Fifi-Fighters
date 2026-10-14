@@ -23,6 +23,23 @@ Roda direto no navegador, sem instalar nada: é só abrir o `index.html`.
 - **Contra-golpe:** acertar o oponente na preparação de um golpe dá 25% a mais de dano.
 - `M` liga/desliga o som · `F` tela cheia · a luta pausa sozinha se você trocar de aba.
 
+## Celular como controle
+
+Dá para jogar com o celular no lugar do teclado (o teclado e o controle continuam funcionando juntos):
+
+1. Abra o jogo no notebook pelo site (na Vercel, não pelo arquivo).
+2. Na tela inicial aparece um **QR code** no canto, com o código da sala. Ele também fica em **Controle no Celular**, no menu principal.
+3. Cada pessoa aponta a câmera do celular para o QR code. O primeiro celular vira o **P1** e o segundo vira o **P2**.
+   Quem abrir o site direto no celular cai na tela do controle e pode digitar o código da sala.
+
+O controle é inspirado no do Super Nintendo: direcional, **Y** soco, **B** chute, **A** poder, **X** super, **L** poder, **R** super, **START** pausa e **SELECT** volta nos menus.
+Ele vibra quando o seu personagem apanha (no Android) e mostra quem você escolheu.
+
+- Funciona melhor com todo mundo na mesma Wi-Fi. A conexão vai direto do celular para o notebook (WebRTC); o servidor público do PeerJS só apresenta um aparelho ao outro.
+- Se a página do notebook recarregar, os celulares reconectam sozinhos no mesmo lugar (P1/P2).
+- Se um celular cair no meio da luta, o jogo pausa.
+- Para jogar no próprio celular, use `index.html?jogo=1`.
+
 ## Modos
 
 - **Arcade:** enfrente os outros 7 Fifis em sequência, com o chefe no final. Tem pontuação, recorde, tela de continuar e um final para cada personagem.
@@ -69,4 +86,6 @@ Os Fifis que não estão lutando aparecem torcendo no fundo.
 - `js/characters.js`: golpes, falas e atributos de cada personagem
 - `js/sprites.js` e `js/poses.js`: renderizador antigo por código, usado se alguma imagem não carregar
 - `js/fighter.js`: lutadores e golpes; `js/ai.js`: CPU
+- `controle.html`, `js/controller.js` e `css/controller.css`: o controle no celular; `js/remote.js`: o lado do notebook (sala, QR code, P1/P2)
+- `js/vendor/`: PeerJS e gerador de QR code (licença MIT)
 - `js/stages.js`: cenários; `js/game.js`: telas e HUD; `js/audio.js`: sons e música chiptune (gerados por código)

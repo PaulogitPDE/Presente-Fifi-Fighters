@@ -468,6 +468,7 @@
       attacker.rec.hits++; attacker.rec.dmg += dmg; attacker.rec.maxCombo = Math.max(attacker.rec.maxCombo, attacker.combo);
       if (attacker.combo >= 2) game.comboText(attacker, attacker.combo, attacker.comboDmg);
       if (game.onHit) game.onHit(attacker, this, dmg, counterHit);
+      if (window.Remote && game.fighters) { const fi = game.fighters.indexOf(this); if (fi === 0 || game.mode === '2p') Remote.vibrate(fi, dmg >= 65 ? 60 : 25); }
       if (counterHit) attacker.say('CONTRA-GOLPE!', '#ff9a3a');
       if (!game.firstAttack && game.fighting && !game.training) { game.firstAttack = attacker; attacker.say('PRIMEIRO GOLPE!', '#ffd400'); }
       // tonteira

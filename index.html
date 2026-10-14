@@ -4,6 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fifi Fighters</title>
+<script>
+  // no celular (ou abrindo o link do QR code) mostra só o controle; ?jogo=1 força o jogo
+  (function () {
+    var q = location.search;
+    if (/[?&]jogo=1/.test(q)) return;
+    var mob = /Android|iPhone|iPod|Mobile/i.test(navigator.userAgent);
+    if (mob || /[?&]c=/.test(q)) location.replace('controle.html' + q);
+  })();
+</script>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -12,6 +21,9 @@
 <script src="js/font.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/input.js"></script>
+<script src="js/vendor/peerjs.min.js"></script>
+<script src="js/vendor/qrcode.js"></script>
+<script src="js/remote.js"></script>
 <script src="js/sprites.js"></script>
 <script src="js/sheetmeta.js"></script>
 <script src="js/sheetmeta2.js"></script>
