@@ -10,7 +10,9 @@
   const R = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
   const CH = window.CHARACTERS;
   const byId = id => CH.find(c => c.id === id);
-  const pick = arr => arr[Math.random() * arr.length | 0];
+  const pick = arr => Array.isArray(arr) ? arr[Math.random() * arr.length | 0] : arr;
+  // falas: as de rivalidade (ch.vs[oponente]) aparecem na maioria das vezes
+  const line = (ch, opp, kind) => { const v = ch.vs && ch.vs[opp.id] && ch.vs[opp.id][kind]; return v && Math.random() < 0.7 ? v : pick(ch[kind] || ['...']); };
   Sprites.loadPortraits(CH);
   if (window.SheetSprites) SheetSprites.load(CH);
 
@@ -511,9 +513,10 @@
     T(b.name, W - 60, 148, '#ffffff', { scale: 2, align: 'center', outline: '#000' });
     if (G.t > 20) T('VS', W / 2, 64, (G.t >> 2) % 2 ? '#ffd400' : '#ff7a1a', { scale: 5, align: 'center', outline: '#000' });
     if (G.mode === 'arcade') T('LUTA ' + (G.arcade.idx + 1), W / 2, 34, '#ffffff', { align: 'center', outline: '#000' });
+    if (G.t <= 1 || !G.vsLines) G.vsLines = [line(a, b, 'intro'), line(b, a, 'intro')];
     if (G.t > 35) {
-      Font.wrap('"' + a.intro + '"', 30).forEach((l, i) => T(l, 6, 166 + i * 9, '#ffe0e0', { shadow: '#000' }));
-      Font.wrap('"' + b.intro + '"', 30).forEach((l, i) => T(l, W - 6, 184 + i * 9, '#e0e8ff', { shadow: '#000', align: 'right' }));
+      Font.wrap('"' + G.vsLines[0] + '"', 30).forEach((l, i) => T(l, 6, 166 + i * 9, '#ffe0e0', { shadow: '#000' }));
+      Font.wrap('"' + G.vsLines[1] + '"', 30).forEach((l, i) => T(l, W - 6, 184 + i * 9, '#e0e8ff', { shadow: '#000', align: 'right' }));
     }
     T(G.stage.name, W / 2, 206, '#aaaaaa', { align: 'center' });
     if (G.t === 1) Sound.play('announcer', 'round');
@@ -725,7 +728,10 @@
       const wid = G.fighters[G.matchWinner].ch.id;
       if (G.mode !== 'arcade' || G.matchWinner === 0) { G.save.wins[wid] = (G.save.wins[wid] || 0) + 1; saveGame(); }
     }
-    G.winQuote = G.matchWinner >= 0 ? pick(G.fighters[G.matchWinner].ch.win) : 'Empate! Vamos culpar o PV.';
+    if (G.matchWinner >= 0) {
+      const w = G.fighters[G.matchWinner].ch, l = G.fighters[1 - G.matchWinner].ch;
+      G.winQuote = line(w, l, 'win'); G.loseQuote = line(l, w, 'lose');
+    } else { G.winQuote = 'Empate! Vamos culpar o PV.'; G.loseQuote = null; }
     if (G.mode === 'arcade' && G.matchWinner === 0) {
       const f = G.fighters[0];
       G.lastBonus = 10000 + f.hp * 10 + (isFinite(G.timer) ? G.timer * 100 : 0) + f.perfects * 20000 + f.rec.maxCombo * 500;
@@ -951,6 +957,12 @@
       T(who, W / 2 + 40, 8, '#ffd400', { scale: 2, align: 'center', outline: '#000' });
       R(140, 26, 236, 40, '#ffffff'); R(134, 40, 8, 6, '#ffffff');
       Font.wrap('"' + G.winQuote + '"', 37).slice(0, 3).forEach((l2, i) => T(l2, 146, 31 + i * 10, '#1a1a2a'));
+      // o perdedor também fala
+      const lo = G.fighters[1 - wi];
+      if (G.loseQuote && G.t > 20) {
+        photoOr(lo.ch, 's', 140, 146, 27, 30, false);
+        Font.wrap(lo.ch.name + ': "' + G.loseQuote + '"', 33).slice(0, 2).forEach((l2, i) => T(l2, 172, 149 + i * 9, '#b8b0d0', { shadow: '#000' }));
+      }
     } else {
       T('EMPATE!', W / 2, 20, '#ffd400', { scale: 3, align: 'center', outline: '#000' });
       T(G.winQuote, W / 2, 50, '#ffffff', { align: 'center' });
@@ -970,7 +982,7 @@
     let items;
     if (G.mode === 'arcade') {
       if (wi === 0) {
-        T('BONUS +' + G.lastBonus + '   TOTAL ' + G.arcade.score, W / 2 + 70, 148, '#ffd400', { align: 'center', shadow: '#000' });
+        T('BONUS +' + G.lastBonus + '   TOTAL ' + G.arcade.score, W / 2 + 70, 180, '#ffd400', { align: 'center', shadow: '#000' });
         items = [{ label: 'CONTINUAR', act: () => { G.arcade.idx++; if (G.arcade.idx >= G.arcade.order.length) { const id = G.arcade.me; G.save.clears[id] = true; saveGame(); go('ending'); Sound.playMusic('ending'); } else go('ladder'); } }];
       } else items = [{ label: 'CONTINUAR', act: () => go('continue') }];
     } else {
@@ -981,7 +993,7 @@
         { label: 'MENU PRINCIPAL', act: () => go('title') }
       ];
     }
-    if (G.t > 30) runMenu(items, G.menu, W / 2 + 70, G.mode === 'arcade' ? 164 : 158, { w: 150, lh: 12 });
+    if (G.t > 30) runMenu(items, G.menu, W / 2 + 70, G.mode === 'arcade' ? 194 : 168, { w: 150, lh: 12 });
   }
 
   // ---------- Laço principal ----------

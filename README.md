@@ -16,7 +16,7 @@ Roda direto no navegador, sem instalar nada: é só abrir o `index.html`.
 
 - **Poder** = especial 1 · **Frente + Poder** = especial 2 · **Baixo + Poder** = especial 3
 - **Combo:** acertou soco ou chute? Aperte Poder logo em seguida.
-- **Agarrão:** perto + Soco + Chute. Para escapar, aperte os dois logo que for agarrado.
+- **Agarrão:** perto + Soco + Chute juntos (pode apertar um logo depois do outro). Para escapar, aperte os dois logo que for agarrado.
 - **Dash:** frente frente (avança) ou trás trás (recua com invencibilidade rápida).
 - **Defesa:** segure para trás. Agachado defende rasteira; em pé defende golpe aéreo.
 - **Tonteira:** quem apanha muito seguido fica tonto. Aperte tudo para acordar mais rápido.
@@ -46,7 +46,10 @@ No fim de cada luta aparecem as estatísticas (golpes, dano, maior combo, especi
 | **ALEX** | Haeee! · Ta-La-Ri-Ca · Febre Zomboid (veneno) | Fiel Torcida |
 | **VALESCA** | Cookie de Nutella · Ai que Ódio (voadora pra cima) · Vistoria do André (enfraquece) | #ValescaPraVereadora |
 
-Cada um tem a própria animação parada, de vitória e frases de entrada e de vitória.
+Cada um tem as próprias animações, tiradas das folhas de sprites: parado, andando, pulo, guarda, chute, rasteira, voadora, gancho, dano, queda, levantando, um quadro para cada especial, vitória e entrada.
+Os projéteis, ajudantes (Amora, as gatas, a Fiel Torcida, a catraca da portaria), feixes, faíscas e o KO também são sprites.
+
+As falas de entrada, vitória e derrota são bordões reais do grupo ("Eu nunca estou errado", "Promete???", "Me odeiam", "Teremos que recorrer a democracia", "Ai que ódio"...). Alguns confrontos têm falas próprias, como Belipe x PV ("A culpa é do pv então?"), Pam x Belipe ("Mentiroso do diabooo!") e Alex x Valesca.
 
 Os tamanhos seguem a altura real de cada um: PV 1,90 · Ana 1,80 · Guti 1,75 · Alex e Valesca 1,70 · Pam, Min e Belipe 1,60.
 Na seleção de personagens, os retratos grandes são pixel art feita a partir das fotos.
@@ -59,9 +62,11 @@ Os Fifis que não estão lutando aparecem torcendo no fundo.
 
 ## Estrutura
 
-Sprites, cenários, fonte e música chiptune são gerados por código. As únicas imagens são os retratos em `assets/portraits/`.
-
-- `js/characters.js`: visual, golpes e falas de cada personagem (fácil de ajustar cores, cabelo, óculos etc.)
-- `js/sprites.js`: renderizador de pixel art; `js/poses.js`: animações
+- `assets/sprites2/`: quadros de animação de cada personagem (`js/sheetmeta2.js` guarda tamanho e âncora de cada um)
+- `assets/sprites/`: quadros dos model sheets antigos, usados quando falta algum quadro
+- `assets/fx/`: efeitos e ajudantes (`js/fxmeta.js`); `assets/stages/`: cenários; `assets/portraits/`: retratos
+- `js/sheetsprites.js`: monta as animações a partir dos quadros e desenha os efeitos
+- `js/characters.js`: golpes, falas e atributos de cada personagem
+- `js/sprites.js` e `js/poses.js`: renderizador antigo por código, usado se alguma imagem não carregar
 - `js/fighter.js`: lutadores e golpes; `js/ai.js`: CPU
-- `js/stages.js`: cenários; `js/game.js`: telas e HUD; `js/audio.js`: sons e música
+- `js/stages.js`: cenários; `js/game.js`: telas e HUD; `js/audio.js`: sons e música chiptune (gerados por código)
