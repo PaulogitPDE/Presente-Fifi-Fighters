@@ -119,7 +119,7 @@
     guti: { n: 'sp0', fwd: 'sp1', down: 'intro', super: 'victory' },
     min: { n: 'punch', fwd: 'sp1', down: 'intro', super: 'sp0' },
     pv: { n: 'sp0', fwd: 'intro', down: 'sp1', super: 'sp0' },
-    ana: { n: 'punch', fwd: 'punch', down: 'uppercut', super: 'punch' },
+    ana: { n: 'sp0', fwd: 'punch', down: 'sp1', super: 'sp0' },
     belipe: { n: 'sp1', fwd: 'sp0', down: 'sp1', super: 'sp0' },
     pam: { n: 'sp0', fwd: 'sp1', down: 'victory', super: 'intro' },
     alex: { n: 'sp0', fwd: 'sp1', down: 'punch', super: 'victory' },
