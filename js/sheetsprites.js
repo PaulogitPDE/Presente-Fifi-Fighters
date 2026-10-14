@@ -130,6 +130,8 @@
   // quadros que já trazem o próprio objeto (o jogo não desenha o objeto por cima)
   const OWN_PROP = { guti: { sp1: 'kart' }, min: { sp0: 'ricecooker' }, pv: { sp1: 'costela' }, pam: { victory: 'monster' } };
 
+  // folha de parado/andando desenhada de perfil e bem mais fina que as outras: usa a guarda
+  const THIN = { guti: true };
   function idleFrame(M, t) {
     const n = M._counts.idle, len = n > 1 ? n * 2 - 2 : 1;
     let i = Math.floor(t / 9) % len; if (i >= n) i = len - i;
@@ -153,8 +155,8 @@
     const fit = f => ({ f, sy: Math.min(1, crouchH / M[f].h) });
     const punch = P('punch', 'punch2', 'guard');
     switch (st.kind) {
-      case 'idle': return { f: idleFrame(M, t) };
-      case 'walk': return { f: walkFrame(M, t, st.dir) };
+      case 'idle': return THIN[ch.id] ? { f: 'guard', dy: (t >> 4) % 2 } : { f: idleFrame(M, t) };
+      case 'walk': return THIN[ch.id] ? { f: 'guard', dy: -Math.round(Math.abs(Math.sin(t / 5)) * 2), rot: Math.sin(t / 5) * 2 * st.dir } : { f: walkFrame(M, t, st.dir) };
       case 'crouch': return fit(P('getup'));
       case 'getup': return st.k < 0.6 ? fit(P('getup')) : { f: P('getup') };
       case 'jump': return { f: P('jump'), rot: st.up ? -3 : 5 };
@@ -163,7 +165,7 @@
       case 'thrown': return { f: P('hit'), rot: -10 };
       case 'airhit': return { f: P('air') };
       case 'dizzy': return { f: P('hit'), rot: Math.sin(t / 8) * 5 + 2, dx: Math.round(Math.sin(t / 8) * 2) };
-      case 'dash': return { f: walkFrame(M, t * 2, 1), rot: 5, dy: -1 };
+      case 'dash': return THIN[ch.id] ? { f: 'guard', rot: 6, dy: -1 } : { f: walkFrame(M, t * 2, 1), rot: 5, dy: -1 };
       case 'backdash': return { f: P('jump'), rot: -8, dy: -2 };
       case 'lying': return { f: P('lying') };
       case 'throw': return st.phase === 1 ? { f: punch } : { f: P('guard') };
