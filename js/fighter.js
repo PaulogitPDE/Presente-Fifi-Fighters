@@ -33,7 +33,7 @@
       this.reset(side);
     }
     reset(side) {
-      this.x = side === 0 ? 288 - 70 : 288 + 70;
+      this.x = Stages.WIDTH / 2 + (side === 0 ? -70 : 70);
       this.y = 0; this.vx = 0; this.vy = 0;
       this.facing = side === 0 ? 1 : -1;
       this.hp = MAX_HP; this.dispHp = MAX_HP;

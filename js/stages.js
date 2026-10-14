@@ -483,8 +483,27 @@
     }
   ];
 
+  // Cenários desenhados (imagens em assets/stages). Se a imagem não carregar, usa o cenário procedural.
+  const ART = {
+    subway: { w: 452, spec: [{ x: 40, y: 160, s: 0.68 }, { x: 430, y: 160, s: 0.68 }] },
+    parque: { w: 452, spec: [{ x: 26, y: 158, s: 0.66 }, { x: 430, y: 158, s: 0.66 }] },
+    prefeitura: { w: 387, spec: [] },
+    etec: { w: 452, spec: [{ x: 50, y: 158, s: 0.64 }, { x: 140, y: 158, s: 0.64 }, { x: 420, y: 158, s: 0.64 }] },
+    cinema: { w: 452, spec: [] },
+    casa: { w: 430, spec: [{ x: 30, y: 178, s: 0.7 }] },
+    cozinha: { w: 452, spec: [] },
+    rua: { w: 452, spec: [{ x: 24, y: 172, s: 0.68 }, { x: 432, y: 172, s: 0.68 }] }
+  };
+  STAGES.forEach(st => {
+    const a = ART[st.id]; if (!a) return;
+    st.width = a.w; st.spectatorsArt = a.spec;
+    st.img = new Image(); st.img.src = 'assets/stages/' + st.id + '.png';
+  });
+  const hasArt = st => !!(st.img && st.img.complete && st.img.naturalWidth);
+
   const cache = {};
   function bg(st) {
+    if (hasArt(st)) return st.img;
     if (!cache[st.id]) {
       const cv = document.createElement('canvas'); cv.width = SW; cv.height = H;
       st.draw(cv.getContext('2d'));
@@ -492,5 +511,13 @@
     }
     return cache[st.id];
   }
-  window.Stages = { list: STAGES, bg, WIDTH: SW, GROUND };
+  const Stages = {
+    list: STAGES, bg, GROUND, WIDTH: SW,
+    width: st => hasArt(st) ? st.width : SW,
+    // ativa um cenário para a luta (largura, animações e torcida)
+    use(st) { Stages.WIDTH = Stages.width(st); },
+    anim(st, ctx, t) { if (!hasArt(st)) st.anim(ctx, t); },
+    spectators: st => hasArt(st) ? st.spectatorsArt : (st.spectators || [])
+  };
+  window.Stages = Stages;
 })();

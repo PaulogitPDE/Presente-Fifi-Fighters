@@ -383,8 +383,10 @@
     const idx = G.stageIdx;
     if (idx < n) {
       const st = Stages.list[idx];
-      ctx.drawImage(Stages.bg(st), 96, 0, W, H, 0, 0, W, H);
-      ctx.save(); ctx.translate(-96, 0); st.anim(ctx, G.t); ctx.restore();
+      const ox = Math.max(0, Math.round((Stages.width(st) - W) / 2));
+      R(0, 0, W, H, '#000');
+      ctx.drawImage(Stages.bg(st), ox, 0, Math.min(W, Stages.width(st)), H, Math.max(0, (W - Stages.width(st)) / 2), 0, Math.min(W, Stages.width(st)), H);
+      ctx.save(); ctx.translate(-ox, 0); Stages.anim(st, ctx, G.t); ctx.restore();
     } else {
       starBg('#101010', '#444');
       T('?', W / 2, 70, '#ffd400', { scale: 8, align: 'center', outline: '#000' });
@@ -520,6 +522,7 @@
 
   // ---------- LUTA ----------
   function startMatch() {
+    Stages.use(G.stage);
     const a = byId(G.picks[0]), b = byId(G.picks[1]);
     let c2;
     if (G.mode === '2p') c2 = new HumanCtrl(1);
@@ -545,7 +548,7 @@
     G.fighters.forEach((f, i) => { const m = f.meter; f.reset(i); f.meter = m; f.state = G.round === 1 && !G.training ? 'intro' : 'idle'; f.st = 0; });
     G.entities = []; G.particles = []; G.timer = G.training || !G.opts.time ? Infinity : G.opts.time; G.timerF = 0;
     G.phase = 'intro'; G.phaseT = 0; G.fighting = false; G.freezeT = 0; G.shakeT = 0; G.superT = 0; G.flashT = 0;
-    G.cam = 288 - W / 2; G.koSlow = 0; G.combos = [null, null]; G.winner = null; G.paused = false; G.firstAttack = null;
+    G.cam = Stages.WIDTH / 2 - W / 2; G.koSlow = 0; G.combos = [null, null]; G.winner = null; G.paused = false; G.firstAttack = null;
     if (G.training) { G.phase = 'fight'; G.fighting = true; }
   }
   G.other = f => G.fighters[0] === f ? G.fighters[1] : G.fighters[0];
@@ -638,7 +641,7 @@
     G.particles = G.particles.filter(p => p.t < p.life);
     G.combos.forEach((c, i) => { if (c && ++c.t > 70) G.combos[i] = null; });
     const mid = (a.x + b.x) / 2;
-    const target = Math.max(0, Math.min(Stages.WIDTH - W, mid - W / 2));
+    const target = Math.max(0, Math.min(Math.max(0, Stages.WIDTH - W), mid - W / 2));
     G.cam += (target - G.cam) * 0.15;
 
     phaseLogic();
@@ -665,7 +668,7 @@
   }
   function resetTrainingPos() {
     G.fighters.forEach((f, i) => { const m = f.meter; f.reset(i); f.meter = m; });
-    G.entities = []; G.cam = 288 - W / 2; Sound.play('select');
+    G.entities = []; G.cam = Stages.WIDTH / 2 - W / 2; Sound.play('select');
   }
   function drawTrainingHUD() {
     const tr = G.training;
@@ -732,16 +735,17 @@
     if (G.shakeT > 0) { G.shakeT--; sx = (Math.random() - 0.5) * G.shakeAmt; sy = (Math.random() - 0.5) * G.shakeAmt; }
     ctx.save(); ctx.translate(Math.round(sx), Math.round(sy));
     const cam = Math.round(G.cam);
-    ctx.drawImage(Stages.bg(G.stage), cam, 0, W, H, 0, 0, W, H);
-    ctx.save(); ctx.translate(-cam, 0); G.stage.anim(ctx, G.time);
-    (G.stage.spectators || []).forEach((sp, i) => {
+    R(0, 0, W, H, '#000');
+    ctx.drawImage(Stages.bg(G.stage), cam, 0, Math.min(W, Stages.WIDTH), H, 0, 0, Math.min(W, Stages.WIDTH), H);
+    ctx.save(); ctx.translate(-cam, 0); Stages.anim(G.stage, ctx, G.time);
+    Stages.spectators(G.stage).forEach((sp, i) => {
       const ch = G.spectators[i % G.spectators.length]; if (!ch) return;
       const cv = G.specCanvas[i % G.specCanvas.length];
       const cheer = G.phase === 'ko' || (G.combos[0] && G.combos[0].n > 2) || (G.combos[1] && G.combos[1].n > 2);
-      if (window.SheetSprites && SheetSprites.draw(ctx, ch, { kind: cheer ? 'win' : 'idle' }, G.time + i * 60, sp.x, sp.y, sp.x > 288 ? -1 : 1, sp.s, [24, 20, 44, 0.5])) return;
+      if (window.SheetSprites && SheetSprites.draw(ctx, ch, { kind: cheer ? 'win' : 'idle' }, G.time + i * 60, sp.x, sp.y, sp.x > Stages.WIDTH / 2 ? -1 : 1, sp.s, [24, 20, 44, 0.5])) return;
       if (G.time % 2 === 0) Sprites.render(cv, ch, cheer ? Poses.victory(ch, G.time) : Poses.idle(ch, G.time + i * 60), G.time, [24, 20, 44, 0.55]);
       const s = sp.s;
-      ctx.save(); ctx.translate(sp.x, sp.y); if (sp.x > 288) ctx.scale(-1, 1);
+      ctx.save(); ctx.translate(sp.x, sp.y); if (sp.x > Stages.WIDTH / 2) ctx.scale(-1, 1);
       ctx.drawImage(cv, -Sprites.OX * s, -Sprites.OY * s, Sprites.SW * s, Sprites.SH * s); ctx.restore();
     });
     ctx.restore();
