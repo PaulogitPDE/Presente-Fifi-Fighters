@@ -131,7 +131,7 @@
   const OWN_PROP = { guti: { sp1: 'kart' }, min: { sp0: 'ricecooker' }, pv: { sp1: 'costela' }, pam: { victory: 'monster' } };
 
   // folha de parado/andando desenhada de perfil e bem mais fina que as outras: usa a guarda
-  const THIN = { guti: true };
+  const THIN = {};
   function idleFrame(M, t) {
     const n = M._counts.idle, len = n > 1 ? n * 2 - 2 : 1;
     let i = Math.floor(t / 9) % len; if (i >= n) i = len - i;
