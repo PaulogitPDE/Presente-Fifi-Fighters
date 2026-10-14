@@ -68,6 +68,9 @@
       case 'block': return st.crouch ? { f: 'stance', crouch: 0.45, dx: -2 } : { f: 'side', rot: -5, dx: -3 };
       case 'hit': return st.crouch ? { f: 'stance', crouch: 0.45, rot: -8, dx: -3 } : { f: 'stance', rot: -12 * st.k, dx: -4 * st.k };
       case 'airhit': return { f: 'side', rot: -40 };
+      case 'dizzy': return { f: 'stance', rot: Math.sin(t / 8) * 7 - 4, dx: Math.sin(t / 8) * 2 };
+      case 'dash': return { f: 'stance', rot: 10, dy: -2 };
+      case 'backdash': return { f: 'stance', crouch: 0.85, rot: -10, dy: -4 };
       case 'lying': return { f: 'side', rot: -90, dx: Math.round(S.side.h * 0.5), dy: -S.side.ax };
       case 'punch': return st.phase === 0 ? { f: 'stance', dx: -2, rot: -3 } : (st.phase === 1 || st.k < 0.5 ? { f: 'action', dx: 4 } : { f: 'stance' });
       case 'cpunch': return st.phase === 0 ? { f: 'stance', crouch: 0.45 } : { f: 'action', crouch: 0.5, dx: 4 };
@@ -97,12 +100,15 @@
   }
 
   // desenha no contexto final; tint = [r,g,b,a]
-  function draw(ctx, ch, st, t, x, y, facing, scale, tint) {
+  function draw(ctx, ch, st, t, x, y, facing, scale, tint, alt) {
     if (!ready(ch)) return false;
     const sp = spec(ch, st, t);
     const im = imgs[ch.id][sp.f], m = META[ch.id][sp.f];
     bx.clearRect(0, 0, buf.width, buf.height);
-    bx.save(); bx.translate(BX, BY); frameTo(bx, im, m, sp); bx.restore();
+    bx.save(); bx.translate(BX, BY);
+    if (alt) bx.filter = 'hue-rotate(160deg) saturate(1.15)';
+    frameTo(bx, im, m, sp); bx.restore();
+    bx.filter = 'none';
     if (tint) {
       bx.save(); bx.globalCompositeOperation = 'source-atop'; bx.globalAlpha = tint[3];
       bx.fillStyle = 'rgb(' + tint[0] + ',' + tint[1] + ',' + tint[2] + ')'; bx.fillRect(0, 0, buf.width, buf.height); bx.restore();

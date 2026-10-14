@@ -15,6 +15,10 @@
       const fwd = me.facing === 1 ? 'right' : 'left', back = me.facing === 1 ? 'left' : 'right';
       const lv = this.level;
       const rnd = Math.random;
+      // treino: o boneco segue o comportamento escolhido
+      if (this.dummy) { this.dummyUpdate(me, opp, game, fwd, back); return; }
+      if (me.state === 'thrown' && rnd() < [0, 0.04, 0.1, 0.22][lv]) { this.tap('punch'); this.h = { kick: true }; return; }
+      if (me.state === 'dizzy') { this.h = {}; if (rnd() < 0.25 * lv) this.tap(['punch', 'kick', 'power'][rnd() * 3 | 0]); return; }
       // defesa: reage a ataques
       const oppAttacking = (opp.state === 'attack' || opp.state === 'special' || (opp.move && opp.state === 'jump'));
       const threats = game.entities.some(e => e.owner === opp && Math.abs(e.x - me.x) < 90);
@@ -54,11 +58,26 @@
         case 'sweep': this.h.down = true; if (rnd() < 0.2) { this.tap('kick'); this.plan = 'wait'; } break;
         case 'pressure':
           if (dist > 40) this.h[fwd] = true;
+          else if (dist < 42 && rnd() < 0.02 * lv) { this.tap('punch'); this.h.kick = true; }
           else if (rnd() < 0.08 * lv + 0.04) { const k = rnd(); this.tap(k < 0.5 ? 'punch' : 'kick'); if (rnd() < 0.3) this.h.down = true; }
           break;
         case 'super': this.h.punch = true; this.tap('power'); this.tap('punch'); this.plan = 'wait'; break;
       }
     }
   }
+  // comportamentos do boneco de treino
+  AICtrl.prototype.dummyUpdate = function (me, opp, game, fwd, back) {
+    this.h = {};
+    const mode = this.dummy;
+    const dist = Math.abs(opp.x - me.x);
+    const threat = opp.state === 'attack' || opp.state === 'special' || (opp.move && opp.state === 'jump') || game.entities.some(e => e.owner === opp && Math.abs(e.x - me.x) < 110);
+    if (mode === 'crouch') this.h.down = true;
+    if (mode === 'jump' && me.onGround() && me.canAct()) this.h.up = true;
+    if (mode === 'block' || mode === 'blockAfter') {
+      const blockNow = mode === 'block' || me.state === 'block' || me.state === 'hit';
+      if (threat && blockNow) { this.h[back] = true; const lvl = opp.move && opp.move.def && opp.move.def.level; if (lvl === 'low' || (opp.move && opp.move.kind === 'ckick')) this.h.down = true; }
+    }
+    if (mode === 'tech' && me.state === 'thrown') { this.tap('punch'); this.h.kick = true; }
+  };
   window.AICtrl = AICtrl;
 })();

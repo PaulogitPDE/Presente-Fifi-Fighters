@@ -3,6 +3,7 @@
   let ctx = null, master = null, musicGain = null, sfxGain = null;
   let musicTimer = null, musicStep = 0, currentSong = null, nextTime = 0;
   let muted = false;
+  let volMusic = 0.7, volSfx = 0.8; // 0..1
 
   function init() {
     if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
@@ -10,8 +11,8 @@
       ctx = new (window.AudioContext || window.webkitAudioContext)();
     } catch (e) { return; }
     master = ctx.createGain(); master.gain.value = 0.5; master.connect(ctx.destination);
-    musicGain = ctx.createGain(); musicGain.gain.value = 0.22; musicGain.connect(master);
-    sfxGain = ctx.createGain(); sfxGain.gain.value = 0.6; sfxGain.connect(master);
+    musicGain = ctx.createGain(); musicGain.gain.value = 0.32 * volMusic; musicGain.connect(master);
+    sfxGain = ctx.createGain(); sfxGain.gain.value = 0.75 * volSfx; sfxGain.connect(master);
   }
 
   function tone(freq, dur, type, vol, dest, when, slideTo) {
@@ -84,6 +85,9 @@
   const N = (n) => 440 * Math.pow(2, (n - 69) / 12);
   // Cada música: tempo, baixo (notas midi por passo), melodia
   const SONGS = {
+    ending: { bpm: 112, bass: [48, 0, 55, 0, 52, 0, 55, 0, 45, 0, 52, 0, 53, 0, 55, 0], lead: [72, 0, 76, 79, 77, 0, 76, 74, 72, 0, 69, 0, 71, 72, 74, 0, 76, 0, 79, 84, 83, 0, 81, 79, 77, 76, 74, 0, 72, 0, 0, 0] },
+    gameover: { bpm: 90, bass: [45, 0, 0, 0, 44, 0, 0, 0, 43, 0, 0, 0, 42, 0, 0, 0], lead: [69, 0, 68, 0, 67, 0, 66, 0, 65, 0, 0, 0, 64, 0, 0, 0] },
+    ladder: { bpm: 150, bass: [43, 0, 43, 55, 41, 0, 41, 53, 40, 0, 40, 52, 38, 0, 43, 0], lead: [67, 71, 74, 0, 72, 69, 65, 0, 64, 67, 71, 0, 74, 0, 0, 0] },
     title: { bpm: 140, bass: [45, 0, 45, 0, 48, 0, 50, 0, 45, 0, 45, 0, 43, 0, 43, 0], lead: [69, 0, 72, 74, 76, 0, 74, 72, 69, 0, 67, 0, 64, 0, 67, 0, 69, 0, 72, 74, 76, 0, 79, 77, 76, 74, 72, 0, 74, 0, 0, 0] },
     select: { bpm: 150, bass: [40, 0, 52, 0, 40, 0, 52, 0, 43, 0, 55, 0, 45, 0, 57, 0], lead: [64, 67, 71, 0, 72, 71, 67, 0, 64, 67, 71, 74, 72, 0, 0, 0] },
     subway: { bpm: 156, bass: [41, 41, 53, 41, 41, 53, 41, 53, 43, 43, 55, 43, 46, 46, 58, 46], lead: [65, 0, 69, 72, 0, 69, 72, 74, 72, 0, 69, 0, 67, 69, 65, 0] },
@@ -126,6 +130,11 @@
     if (!musicTimer) musicTimer = setInterval(scheduler, 50);
   }
   function stopMusic() { currentSong = null; }
+  function setVolumes(m, s) {
+    volMusic = m; volSfx = s;
+    if (musicGain) musicGain.gain.value = 0.32 * volMusic;
+    if (sfxGain) sfxGain.gain.value = 0.75 * volSfx;
+  }
   function toggleMute() {
     muted = !muted;
     if (master) master.gain.value = muted ? 0 : 0.5;
@@ -133,7 +142,7 @@
   }
 
   window.Sound = {
-    init, playMusic, stopMusic, toggleMute,
+    init, playMusic, stopMusic, toggleMute, setVolumes, isMuted: () => muted,
     play(name, arg) { if (ctx && SFX[name]) SFX[name](arg); }
   };
 })();

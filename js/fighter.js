@@ -14,6 +14,9 @@
     jkick: { startup: 4, active: 9, recovery: 4, dmg: 72, box: [6, -24, 26, 18], stun: 17, level: 'high', push: 2.5 }
   };
 
+  const THROW = { startup: 15, active: 1, recovery: 15, pose: 'push' };
+  function game_particle(f, type) { if (window.G && G.particle) G.particle(f.x - f.facing * 8, GROUND - 2, type); }
+
   class HumanCtrl {
     constructor(p) { this.p = p; }
     held(b) { return Input.held(this.p, b); }
@@ -42,6 +45,10 @@
       this.cool = {}; this.lastDmg = 0; this.lastDmgT = -999;
       this.knock = false; this.flashT = 0; this.texts = [];
       this.hitThisMove = 0; this.anim = 0;
+      this.stunMeter = 0; this.stunDecayT = 0; this.dizzyNext = false; this.dizzyT = 0;
+      this.lastTap = { left: -99, right: -99 }; this.dashT = 0; this.dashDir = 0;
+      this.comboDmg = 0; this.holder = null;
+      if (!this.rec) this.rec = { hits: 0, dmg: 0, maxCombo: 0, specials: 0, supers: 0, throws: 0, blocks: 0 };
     }
     get speedMul() { return this.buff > 0 && this.buffDef ? this.buffDef.speedMul : 1; }
     get dmgMul() { return this.buff > 0 && this.buffDef ? this.buffDef.dmgMul : 1; }
@@ -70,6 +77,7 @@
       for (const k in this.cool) if (this.cool[k] > 0) this.cool[k]--;
       if (this.poison > 0) { this.poison--; if (this.poison % 3 === 0 && this.hp > 1 && game.fighting) this.hp -= 1; }
       this.texts = this.texts.filter(x => ++x.t < 60);
+      if (this.stunDecayT > 0) this.stunDecayT--; else this.stunMeter = Math.max(0, this.stunMeter - 0.25);
       this.dispHp += (this.hp - this.dispHp) * 0.08;
 
       if (!game.fighting) { this.physics(game); return; }
@@ -79,6 +87,7 @@
         case 'idle': case 'walk': case 'crouch': {
           this.face(opp);
           if (this.tryAttack(game, opp)) break;
+          if (this.tryDash()) break;
           const spd = 1.7 * this.stats.speed * this.speedMul;
           if (c.held('up')) {
             this.state = 'jump'; this.vy = -7.6 * this.stats.jump; this.st = 0;
@@ -103,7 +112,49 @@
         case 'special': this.updateSpecial(game, opp); break;
         case 'hit': case 'block':
           this.stun--; this.vx *= 0.85;
-          if (this.stun <= 0) { this.state = this.crouching ? 'crouch' : 'idle'; this.st = 0; }
+          if (this.stun <= 0) {
+            if (this.dizzyNext && this.state === 'hit') { this.dizzyNext = false; this.state = 'dizzy'; this.dizzyT = 150; this.st = 0; this.crouching = false; this.say('TONTO!', '#ffd400'); Sound.play('ko'); }
+            else { this.state = this.crouching ? 'crouch' : 'idle'; this.st = 0; }
+          }
+          break;
+        case 'dizzy': {
+          this.vx = 0;
+          const mash = ['punch', 'kick', 'power', 'left', 'right', 'up', 'down'].some(b => c.pressed(b, 0));
+          this.dizzyT -= mash ? 6 : 1;
+          if (this.dizzyT <= 0) { this.state = 'idle'; this.st = 0; this.stunMeter = 0; }
+          break;
+        }
+        case 'dash':
+          this.dashT--;
+          this.vx = this.dashDir * (this.dashDir === this.facing ? 4.4 : 3.6) * this.stats.speed;
+          if (this.dashDir !== this.facing && this.st < 7) this.inv = 1;
+          if (this.dashT <= 0) { this.state = 'idle'; this.vx = 0; this.st = 0; }
+          break;
+        case 'throw': {
+          const m = this.move; m.f++;
+          const o = this.holder;
+          if (m.f <= 14 && o && o.state === 'thrown') {
+            o.x = this.x + this.facing * 22; o.vx = 0;
+            // escapar do agarrão: soco + chute juntos
+            if (m.f <= 9 && ((o.ctrl.pressed('punch', 3) && o.ctrl.held('kick')) || (o.ctrl.pressed('kick', 3) && o.ctrl.held('punch')))) {
+              o.ctrl.consume('punch'); o.ctrl.consume('kick');
+              o.state = 'block'; o.stun = 14; o.vx = this.facing * 3; o.holder = null; o.st = 0;
+              this.state = 'block'; this.stun = 14; this.vx = -this.facing * 3; this.move = null; this.st = 0;
+              o.say('ESCAPOU!', '#9ff0ff'); Sound.play('block'); game.particle((this.x + o.x) / 2, GROUND - 50, 'block');
+              break;
+            }
+          }
+          if (m.f === 15 && o && o.state === 'thrown') {
+            o.state = 'idle'; o.holder = null;
+            o.receiveDamage(game, this, { dmg: 110, stun: 30, knockdown: true, special: false, push: 3 }, true);
+            this.rec.throws++;
+            game.shake(4);
+          }
+          if (m.f > 30) { this.move = null; this.state = 'idle'; this.st = 0; }
+          break;
+        }
+        case 'thrown':
+          if (!this.holder || this.holder.state !== 'throw') { this.state = 'idle'; this.holder = null; }
           break;
         case 'airhit':
           if (this.onGround() && this.vy >= 0 && this.st > 3) { this.state = 'knockdown'; this.st = 0; this.vx = 0; Sound.play('land'); game.shake(3); }
@@ -136,9 +187,48 @@
 
     face(opp) { this.facing = opp.x >= this.x ? 1 : -1; }
 
+    tryDash() {
+      const c = this.ctrl;
+      for (const dir of ['left', 'right']) {
+        if (c.pressed(dir, 0)) {
+          if (this.t - this.lastTap[dir] < 12) {
+            this.lastTap[dir] = -99;
+            this.state = 'dash'; this.st = 0; this.dashDir = dir === 'right' ? 1 : -1;
+            this.dashT = this.dashDir === this.facing ? 14 : 16; this.crouching = false;
+            game_particle(this, 'dust');
+            Sound.play('whoosh');
+            return true;
+          }
+          this.lastTap[dir] = this.t;
+        }
+      }
+      return false;
+    }
+    canBeThrown() {
+      return this.onGround() && this.inv <= 0 && ['idle', 'walk', 'crouch', 'attack', 'dash'].includes(this.state);
+    }
+    tryThrow(game, opp) {
+      const c = this.ctrl;
+      const both = (c.pressed('punch', 2) && c.held('kick')) || (c.pressed('kick', 2) && c.held('punch'));
+      if (!both) return false;
+      if (Math.abs(opp.x - this.x) > 46 || !opp.canBeThrown()) return false;
+      c.consume('punch'); c.consume('kick');
+      this.state = 'throw'; this.st = 0; this.vx = 0; this.crouching = false;
+      this.move = { def: THROW, f: 0, throwMove: true };
+      this.holder = opp;
+      opp.state = 'thrown'; opp.st = 0; opp.vx = 0; opp.move = null; opp.holder = this; opp.crouching = false;
+      this.say('AGARRAO!', '#ffffff'); Sound.play('whoosh');
+      return true;
+    }
+
     tryAttack(game, opp) {
       const c = this.ctrl;
       const air = this.state === 'jump';
+      if (!air && this.tryThrow(game, opp)) return true;
+      // SUPER pelo botão dedicado do controle
+      if (!air && this.meter >= 100 && c.pressed('super', 3)) {
+        c.consume('super'); this.meter = 0; this.startSpecial(game, this.ch.specials.super, true); return true;
+      }
       // SUPER: soco + poder juntos com barra cheia
       if (!air && this.meter >= 100 && ((c.pressed('power', 4) && c.held('punch')) || (c.pressed('punch', 4) && c.held('power')))) {
         c.consume('power'); c.consume('punch');
@@ -215,8 +305,8 @@
       this.move = { def, f: 0, hits: 0, lastHitF: -999, isSuper, key, spawned: 0 };
       if (def.cooldown || ['heal', 'undo', 'buff'].includes(def.type)) this.cool[key] = def.cooldown || (def.type === 'buff' ? 600 : 480);
       if (key === 'down' && def.type === 'trap') this.cool[key] = 200;
-      if (isSuper) { game.superFlash(this, def); Sound.play('super'); this.inv = def.startup + 4; }
-      else Sound.play('special');
+      if (isSuper) { game.superFlash(this, def); Sound.play('super'); this.inv = def.startup + 4; this.rec.supers++; }
+      else { Sound.play('special'); this.rec.specials++; }
       this.say(def.name, isSuper ? '#ffd400' : '#9ff0ff');
     }
 
@@ -337,7 +427,7 @@
         this.state = 'block'; this.stun = Math.round((hb.stun || 14) * 0.7); this.st = 0;
         this.vx = -this.facing * (hb.push || 2) * 1.2;
         this.meter = Math.min(100, this.meter + 3);
-        Sound.play('block');
+        Sound.play('block'); this.rec.blocks++;
         game.particle((this.x + attacker.x) / 2 + this.facing * 4, GROUND + this.y - 40, 'block');
         game.freeze(4);
         return 'block';
@@ -360,14 +450,27 @@
     }
 
     receiveDamage(game, attacker, hb, noScale) {
+      // combo só continua se o oponente ainda estava atordoado pelo golpe anterior
+      const inCombo = ['hit', 'airhit', 'knockdown', 'thrown', 'dizzy'].includes(this.state) && attacker.comboTimer > 0;
+      if (!inCombo) { attacker.combo = 0; attacker.comboDmg = 0; }
       const scale = noScale ? 1 : Math.max(0.45, Math.pow(0.88, attacker.combo));
-      let dmg = hb.dmg * attacker.stats.power * attacker.dmgMul / this.stats.defense * scale * (this.vuln > 0 ? 1.3 : 1);
-      if (attacker.move && attacker.move.isSuper) dmg *= 1.0;
+      // contra-golpe: acertar o oponente durante a preparação de um golpe
+      const counterHit = this.move && (this.state === 'attack' || this.state === 'special') && !this.move.isSuper && this.move.f < this.move.def.startup + (this.move.def.active || 2);
+      let dmg = hb.dmg * attacker.stats.power * attacker.dmgMul / this.stats.defense * scale * (this.vuln > 0 ? 1.3 : 1) * (counterHit ? 1.25 : 1);
       dmg = Math.max(1, Math.round(dmg));
+      if (game.training && game.training.noKO) dmg = Math.min(dmg, Math.max(0, this.hp - 1));
       this.hp = Math.max(0, this.hp - dmg);
       this.lastDmg = dmg; this.lastDmgT = game.time;
-      attacker.combo++; attacker.comboTimer = 50;
-      if (attacker.combo >= 2) game.comboText(attacker, attacker.combo);
+      attacker.combo++; attacker.comboTimer = 50; attacker.comboDmg += dmg;
+      attacker.rec.hits++; attacker.rec.dmg += dmg; attacker.rec.maxCombo = Math.max(attacker.rec.maxCombo, attacker.combo);
+      if (attacker.combo >= 2) game.comboText(attacker, attacker.combo, attacker.comboDmg);
+      if (game.onHit) game.onHit(attacker, this, dmg, counterHit);
+      if (counterHit) attacker.say('CONTRA-GOLPE!', '#ff9a3a');
+      if (!game.firstAttack && game.fighting && !game.training) { game.firstAttack = attacker; attacker.say('PRIMEIRO GOLPE!', '#ffd400'); }
+      // tonteira
+      this.stunMeter += dmg * (hb.special ? 0.1 : 0.16); this.stunDecayT = 90;
+      if (this.state === 'dizzy') { this.stunMeter = 0; this.dizzyNext = false; }
+      else if (this.stunMeter >= 100 && !hb.knockdown && !hb.launch) { this.dizzyNext = true; this.stunMeter = 0; }
       attacker.meter = Math.min(100, attacker.meter + (hb.special ? 5 : 8));
       this.meter = Math.min(100, this.meter + 4);
       if (hb.poison) { this.poison = hb.poison; this.say('FEBRE!', '#88ff66'); }
@@ -415,6 +518,10 @@
         }
         case 'block': return Poses.block(ch, this.crouching);
         case 'hit': return Poses.hit(ch, Math.min(1, this.stun / 10), this.crouching);
+        case 'dizzy': { const p = Poses.hit(ch, 0.4 + Math.sin(t / 8) * 0.3, false); p.headTilt = Math.sin(t / 8) * 10; return p; }
+        case 'dash': return Poses.walk(ch, t * 2, this.dashDir === this.facing ? 1 : -1);
+        case 'throw': return Poses.special(ch, 'push', this.move && this.move.f < 15 ? 1 : 2, 0.5);
+        case 'thrown': return Poses.hit(ch, 1, false);
         case 'airhit': return Poses.airHit(ch);
         case 'knockdown': return Poses.lying();
         case 'getup': return Poses.getUp(this.st / 16);
@@ -442,6 +549,10 @@
         }
         case 'block': return { kind: 'block', crouch: this.crouching };
         case 'hit': return { kind: 'hit', k: Math.min(1, this.stun / 10), crouch: this.crouching };
+        case 'dizzy': return { kind: 'dizzy' };
+        case 'dash': return this.dashDir === this.facing ? { kind: 'dash' } : { kind: 'backdash' };
+        case 'throw': return { kind: 'special', pose: 'push', phase: this.move && this.move.f < 15 ? 1 : 2, k: this.move ? Math.min(1, Math.max(0, (this.move.f - 15) / 15)) : 1 };
+        case 'thrown': return { kind: 'hit', k: 1 };
         case 'airhit': return { kind: 'airhit' };
         case 'knockdown': return { kind: 'lying' };
         case 'getup': return { kind: 'getup', k: this.st / 16 };
@@ -469,7 +580,7 @@
       else if (this.vuln > 0) tint = (this.t >> 3) % 3 === 0 ? [255, 220, 60, 0.35] : null;
       const sx = Math.round(this.x - camX), sy = Math.round(GROUND + this.y);
       const useSheet = window.SheetSprites && SheetSprites.ready(this.ch);
-      if (!useSheet) Sprites.render(this.canvas, this.ch, p, this.anim, tint);
+      if (!useSheet) Sprites.render(this.canvas, this.ch, p, this.anim, tint || (this.alt ? [60, 90, 200, 0.3] : null));
       // sombra
       ctx.fillStyle = 'rgba(0,0,0,0.3)';
       const sw = Math.max(14, 44 * (this.ch.scale || 1) / 1.45 + this.y / 4);
@@ -477,7 +588,7 @@
       // kart
       if (this.move && this.move.def && this.move.def.fx === 'kart' && this.state === 'special') { ctx.save(); ctx.translate(sx, sy); ctx.scale(1.5, 1.5); drawKart(ctx, 0, 0, this.facing, this.t); ctx.restore(); }
       if (this.inv > 0 && this.state === 'getup' && (this.t % 4 < 2)) ctx.globalAlpha = 0.7;
-      if (useSheet) SheetSprites.draw(ctx, this.ch, this.sheetState(), this.anim, sx, sy, this.facing, 1, tint);
+      if (useSheet) SheetSprites.draw(ctx, this.ch, this.sheetState(), this.anim, sx, sy, this.facing, 1, tint, this.alt);
       else {
         ctx.save();
         ctx.translate(sx, sy);
@@ -488,6 +599,13 @@
       ctx.globalAlpha = 1;
       if (p.flash) { ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fillRect(sx + this.facing * 18 - 6, sy - 66, 12, 12); }
       if (p.heart) { for (let i = 0; i < 3; i++) heart(ctx, sx + Math.sin(this.t / 10 + i * 2) * 14, sy - 70 - ((this.t + i * 20) % 60) / 2); }
+      if (this.state === 'dizzy') {
+        const hy = sy - 62 * (this.ch.scale || 1);
+        for (let i = 0; i < 3; i++) {
+          const a = this.t / 8 + i * 2.1, px = sx + Math.cos(a) * 12, py = hy + Math.sin(a) * 3;
+          ctx.fillStyle = '#ffd400'; ctx.fillRect(Math.round(px) - 1, Math.round(py), 3, 1); ctx.fillRect(Math.round(px), Math.round(py) - 1, 1, 3);
+        }
+      }
       // textos
       this.texts.forEach((tx, i) => {
         Font.text(ctx, tx.s, sx, sy - 66 * (this.ch.scale || 1) - 8 - tx.t * 0.4 - i * 9, tx.color, { align: 'center', outline: '#000000' });

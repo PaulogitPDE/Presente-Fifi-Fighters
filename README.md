@@ -5,22 +5,33 @@ Roda direto no navegador, sem instalar nada: é só abrir o `index.html`.
 
 ## Como jogar
 
-| Ação | Jogador 1 | Jogador 2 |
-|---|---|---|
-| Andar | A / D | ← / → |
-| Pular | W | ↑ |
-| Agachar | S | ↓ |
-| Soco | V | 1 |
-| Chute | B | 2 |
-| Poder | N | 3 |
-| Defender | segurar para trás | segurar para trás |
+| Ação | Jogador 1 | Jogador 2 | Controle |
+|---|---|---|---|
+| Mover / pular / agachar | W A S D | setas | direcional ou analógico |
+| Soco | V | 1 | A |
+| Chute | B | 2 | B |
+| Poder | N | 3 | X ou Y |
+| Super (barra cheia) | V + N | 1 + 3 | RB |
+| Pausa | ESC / ENTER | ESC / ENTER | START |
 
 - **Poder** = especial 1 · **Frente + Poder** = especial 2 · **Baixo + Poder** = especial 3
-- **Soco + Poder** com a barra SUPER cheia = **SUPER**
-- Acertou soco/chute? Aperte Poder logo em seguida para fazer combo.
-- `ESC` pausa · `M` liga/desliga o som · `F` tela cheia
+- **Combo:** acertou soco ou chute? Aperte Poder logo em seguida.
+- **Agarrão:** perto + Soco + Chute. Para escapar, aperte os dois logo que for agarrado.
+- **Dash:** frente frente (avança) ou trás trás (recua com invencibilidade rápida).
+- **Defesa:** segure para trás. Agachado defende rasteira; em pé defende golpe aéreo.
+- **Tonteira:** quem apanha muito seguido fica tonto. Aperte tudo para acordar mais rápido.
+- **Contra-golpe:** acertar o oponente na preparação de um golpe dá 25% a mais de dano.
+- `M` liga/desliga o som · `F` tela cheia · a luta pausa sozinha se você trocar de aba.
 
-Modos: 1 jogador (contra a CPU, em 3 dificuldades) e 2 jogadores no mesmo teclado. Melhor de 3 rounds.
+## Modos
+
+- **Arcade:** enfrente os outros 7 Fifis em sequência, com o chefe no final. Tem pontuação, recorde, tela de continuar e um final para cada personagem.
+- **Versus CPU** e **Versus 2 jogadores** no mesmo teclado ou com controles.
+- **Treino:** vida que regenera, barra de super infinita, histórico de comandos na tela, contador de dano e combo, hitboxes e boneco configurável (parado, agachado, pulando, defendendo, escapando de agarrão ou CPU). `R` reseta a posição.
+- **Lista de Golpes:** golpes e atributos de cada personagem. Também aparece na pausa.
+- **Opções:** volume da música e dos efeitos, rounds para vencer, tempo do round, dificuldade da CPU, tremor de tela e hitboxes. Ficam salvas no navegador, junto com as vitórias de cada personagem e o recorde do arcade.
+
+No fim de cada luta aparecem as estatísticas (golpes, dano, maior combo, especiais, supers, agarrões e defesas). Se os dois escolherem o mesmo personagem, o segundo usa uma cor alternativa.
 
 ## Lutadores
 
