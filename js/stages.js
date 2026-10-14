@@ -502,8 +502,11 @@
   const hasArt = st => !!(st.img && st.img.complete && st.img.naturalWidth);
 
   const cache = {};
+  // a decisão arte/procedural fica fixa durante a luta (Stages.use), mesmo se a imagem terminar de carregar no meio
+  let locked = null;
+  const art = st => locked && locked.st === st ? locked.art : hasArt(st);
   function bg(st) {
-    if (hasArt(st)) return st.img;
+    if (art(st)) return st.img;
     if (!cache[st.id]) {
       const cv = document.createElement('canvas'); cv.width = SW; cv.height = H;
       st.draw(cv.getContext('2d'));
@@ -513,11 +516,11 @@
   }
   const Stages = {
     list: STAGES, bg, GROUND, WIDTH: SW,
-    width: st => hasArt(st) ? st.width : SW,
+    width: st => art(st) ? st.width : SW,
     // ativa um cenário para a luta (largura, animações e torcida)
-    use(st) { Stages.WIDTH = Stages.width(st); },
-    anim(st, ctx, t) { if (!hasArt(st)) st.anim(ctx, t); },
-    spectators: st => hasArt(st) ? st.spectatorsArt : (st.spectators || [])
+    use(st) { locked = { st, art: hasArt(st) }; Stages.WIDTH = Stages.width(st); },
+    anim(st, ctx, t) { if (!art(st)) st.anim(ctx, t); },
+    spectators: st => art(st) ? st.spectatorsArt : (st.spectators || [])
   };
   window.Stages = Stages;
 })();

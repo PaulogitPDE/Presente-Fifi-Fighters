@@ -401,6 +401,7 @@
     // Recebe um golpe. Retorna 'hit'|'block'|'miss'|'counter'
     takeHit(game, attacker, hb, fromProj) {
       if (this.inv > 0 || this.state === 'ko') return 'miss';
+      if (!game.fighting && !game.training) return 'miss'; // depois do KO/tempo ninguém mais apanha
       // contra-golpe
       if (this.state === 'special' && this.move && this.move.def.type === 'counter') {
         const d = this.move.def, f = this.move.f;
@@ -491,7 +492,7 @@
       }
       if (hb.knockdown || !this.onGround() || hb.launch) {
         this.state = 'airhit'; this.vy = hb.launch ? -6 : -4; this.y = Math.min(this.y, -1); this.vx = dir * 2.2; this.st = 0;
-        this.crouching = false;
+        this.crouching = false; this.dizzyNext = false;
       } else {
         this.state = 'hit'; this.stun = hb.stun || 14; this.st = 0; this.vx = dir * (hb.push || 2);
       }
@@ -862,7 +863,7 @@
       if (this.t > this.d.dur || this.owner.state !== 'special') { this.dead = true; return; }
       const o = this.owner, s = o.ch.scale || 1;
       this.y = GROUND + o.y - 40 * s;
-      this.x0 = o.x + o.facing * 24;
+      this.x0 = o.x + o.facing * 24; this.x = this.x0;
       const len = Math.min(320, this.t * 18);
       const box = o.facing === 1 ? { x: this.x0, y: this.y - 12, w: len, h: 24 } : { x: this.x0 - len, y: this.y - 12, w: len, h: 24 };
       const opp = game.other(o);

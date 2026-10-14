@@ -24,7 +24,7 @@
   let padsSeen = 0;
   function pollPads() {
     let pads = [];
-    try { pads = navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean) : []; } catch (e) { pads = []; }
+    try { pads = navigator.getGamepads ? Array.from(navigator.getGamepads()) : []; } catch (e) { pads = []; }
     padsSeen = pads.length;
     for (let p = 0; p < 2; p++) {
       const gp = pads[p];

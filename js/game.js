@@ -353,7 +353,7 @@
         if (Input.menuPressed(p, 'kick')) { G.locked[cp] = false; Sound.play('move'); }
         return;
       }
-      if (solo() && G.selPhase === 1 && Input.menuPressed(0, 'kick')) { G.selPhase = 0; G.locked[0] = false; Sound.play('move'); return; }
+      if (solo() && G.selPhase === 1 && Input.menuPressed(0, 'kick')) { G.selPhase = 0; G.locked[0] = false; G.readyT = 0; Sound.play('move'); return; }
       let c = G.cursor[cp];
       if (Input.menuPressed(p, 'left')) c = (c % 4 === 0) ? c + 3 : c - 1;
       if (Input.menuPressed(p, 'right')) c = (c % 4 === 3) ? c - 3 : c + 1;
@@ -576,6 +576,7 @@
     for (let i = 0; i < n; i++) G.particles.push({ x, y, type, t: 0, vx: (Math.random() - 0.5) * (type === 'dust' ? 0.5 : 4), vy: (Math.random() - 0.7) * (type === 'heart' ? 1 : 4), life: type === 'heart' || type === 'trash' ? 50 : 18 });
   };
   G.onKO = (loser, winner) => {
+    if (G.phase === 'ko') return;
     G.fighting = false; G.phase = 'ko'; G.phaseT = 0; G.koSlow = 50;
     G.winner = winner; Sound.play('ko'); G.flash('#ffffff'); G.shake(6);
     G.perfect = winner.hp >= MAX_HP;
@@ -597,23 +598,21 @@
     for (let s = 0; s < steps; s++) {
       G.time++;
       if (G.superT > 0) {
-        G.superT--;
-        G.superOwner.update(G);
+        G.superT--; // congela tudo, inclusive quem soltou o super (o golpe começa depois do corte)
+        G.superOwner.anim++;
       } else if (G.freezeT > 0) {
         G.freezeT--;
       } else {
         a.update(G); b.update(G);
-        [a, b].forEach(f => {
-          const hb = f.activeHitbox();
-          if (!hb) return;
-          const o = G.other(f);
-          if (overlap(hb, o.hurtbox())) {
-            const m = f.move;
-            o.takeHit(G, f, hb);
-            if (m && f.move === m) {
-              if (m.normal || m.def.type === 'rising') m.hit = true;
-              else { m.hits++; m.lastHitF = m.f - m.def.startup; }
-            }
+        // os dois golpes são lidos antes de aplicar, para trocarem golpe no mesmo quadro
+        const hits = [a, b].map(f => { const hb = f.activeHitbox(); return hb && overlap(hb, G.other(f).hurtbox()) ? [f, hb, f.move] : null; });
+        hits.forEach(h => {
+          if (!h) return;
+          const [f, hb, m] = h, o = G.other(f);
+          if (o.takeHit(G, f, hb) === 'miss') return;
+          if (m && f.move === m) {
+            if (m.normal || m.def.type === 'rising') m.hit = true;
+            else { m.hits++; m.lastHitF = m.f - m.def.startup; }
           }
         });
         // empurrar corpos
@@ -940,6 +939,7 @@
     ];
     const n = items.filter(i => !i.hidden).length;
     panel(W / 2 - 90, 44, 180, n * 13 + 26, 'PAUSA');
+    if (pauseKey) { Sound.play('select'); resume(); return; }
     runMenu(items, P, W / 2, 62, { w: 160, lh: 13 });
     T(MODE_NAMES[G.mode] + (G.mode === 'arcade' ? ' - LUTA ' + (G.arcade.idx + 1) : ''), W / 2, 44 + n * 13 + 30, '#8a80a8', { align: 'center', shadow: '#000' });
     if (pauseKey) { Sound.play('select'); resume(); }
@@ -1027,6 +1027,8 @@
   }
   function begin() { if (started) return; started = true; Sound.init(); Sound.setVolumes(G.opts.music / 10, G.opts.sfx / 10); go('title'); }
   canvas.addEventListener('click', begin);
+  // o áudio só pode começar num gesto do usuário (controle e ESC não contam)
+  ['keydown', 'pointerdown', 'touchend'].forEach(ev => addEventListener(ev, () => { if (started) Sound.init(); }));
   // pausa automática ao trocar de aba ou janela
   window.addEventListener('blur', () => { if (G.scene === 'fight' && !G.paused && G.phase !== 'ko' && G.phase !== 'timeover') { G.paused = true; G.pause = { view: 'main', i: 0, tab: 0 }; } });
   function toggleFull() {

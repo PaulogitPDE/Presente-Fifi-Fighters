@@ -34,6 +34,7 @@
 
   // ---------- Buffer de pintura ----------
   const buf = new Uint8ClampedArray(SW * SH * 4);
+  let outBuf = null; // reaproveitado a cada quadro (contorno)
   const ids = new Uint8Array(SW * SH);
   function clear() { buf.fill(0); ids.fill(0); }
   function put(x, y, c, pid) {
@@ -542,7 +543,8 @@
     clear();
     drawBody(ch, pose, getHeads(ch), t);
     // contorno externo colorido
-    const out = new Uint8ClampedArray(buf);
+    if (!outBuf || outBuf.length !== buf.length) outBuf = new Uint8ClampedArray(buf.length);
+    const out = outBuf; out.set(buf);
     for (let y = 1; y < SH - 1; y++) for (let x = 1; x < SW - 1; x++) {
       const i = y * SW + x;
       if (buf[i * 4 + 3]) continue;
