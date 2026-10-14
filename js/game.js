@@ -563,8 +563,13 @@
     const tr = G.training;
     tr.lastDmg = dmg; tr.combo = att.combo; tr.comboDmg = att.comboDmg; tr.maxCombo = Math.max(tr.maxCombo, att.combo);
   };
+  const FX_PART = { hit: 'spark', hitBig: 'spark', block: 'blockspark', poof: 'dust', dust: 'dust' };
   G.particle = (x, y, type) => {
-    const n = { hit: 6, hitBig: 10, block: 5, dust: 1, pop: 5, heal: 8, heart: 1, poof: 8, trash: 1 }[type] || 3;
+    const spr = FX_PART[type], useSpr = spr && window.FX && FX.ready(spr);
+    if (useSpr) G.particles.push({ x, y: type === 'dust' ? y - 4 : y, type: 'fx', name: spr, t: 0, vx: 0, vy: type === 'dust' ? -0.3 : 0, still: true, flip: Math.random() < 0.5,
+      life: { hit: 12, hitBig: 14, block: 10, poof: 22, dust: 20 }[type], sc: { hit: 1.2, hitBig: 1.8, block: 1.2, poof: 1.5, dust: 0.6 }[type] });
+    if (useSpr && type === 'dust') return;
+    const n = useSpr ? { hit: 3, hitBig: 6, block: 2, poof: 3 }[type] : ({ hit: 6, hitBig: 10, block: 5, dust: 1, pop: 5, heal: 8, heart: 1, poof: 8, trash: 1 }[type] || 3);
     for (let i = 0; i < n; i++) G.particles.push({ x, y, type, t: 0, vx: (Math.random() - 0.5) * (type === 'dust' ? 0.5 : 4), vy: (Math.random() - 0.7) * (type === 'heart' ? 1 : 4), life: type === 'heart' || type === 'trash' ? 50 : 18 });
   };
   G.onKO = (loser, winner) => {
@@ -637,7 +642,7 @@
         if (G.training) trainingTick();
       }
     }
-    G.particles.forEach(p => { p.t++; p.x += p.vx; p.y += p.vy; if (p.type !== 'heart' && p.type !== 'trash') p.vy += 0.2; else p.vy = -0.6; });
+    G.particles.forEach(p => { p.t++; p.x += p.vx; p.y += p.vy; if (p.still) return; if (p.type !== 'heart' && p.type !== 'trash') p.vy += 0.2; else p.vy = -0.6; });
     G.particles = G.particles.filter(p => p.t < p.life);
     G.combos.forEach((c, i) => { if (c && ++c.t > 70) G.combos[i] = null; });
     const mid = (a.x + b.x) / 2;
@@ -753,7 +758,7 @@
     const order = (a.state === 'attack' || a.state === 'special' || a.state === 'throw') ? [b, a] : [a, b];
     order.forEach(f => f.draw(ctx, cam));
     G.entities.forEach(e => {
-      if (e.kind === 'beam') { e.draw(ctx, cam); return; }
+      if (e.kind === 'beam' || (e.spriteReady && e.spriteReady())) { e.draw(ctx, cam); return; } // sprites já no tamanho final
       const px = Math.round(e.x - cam), py = Math.round(e.kind === 'summon' || e.kind === 'trap' ? GROUND : e.y);
       ctx.save(); ctx.translate(px, py); ctx.scale(1.4, 1.4); ctx.translate(-px, -py); e.draw(ctx, cam); ctx.restore();
     });
@@ -792,6 +797,7 @@
         case 'heart': heart(ctx, x, y); break;
         case 'poof': R(x - 2, y - 2, 4 + p.t / 3, 4 + p.t / 3, 'rgba(230,230,240,' + k + ')'); break;
         case 'trash': Font.text(ctx, 'X', x, y, '#ff6a6a', { outline: '#000' }); break;
+        case 'fx': FX.draw(ctx, p.name, x, y, { scale: p.sc * (1 + 0.35 * p.t / p.life), alpha: Math.min(1, k * 2), flip: p.flip }); break;
       }
     });
   }
@@ -862,7 +868,10 @@
       if (t < 70) big(final ? 'ROUND FINAL' : 'ROUND ' + G.round, '#ffd400', final ? 3 : 4);
       else big('LUTEM!', (t >> 2) % 2 ? '#ff4a1a' : '#ffd400', 5);
     }
-    if (G.phase === 'ko' && t < 140) big(G.perfect && t > 60 ? 'PERFEITO!' : 'K.O.', (t >> 2) % 2 ? '#ff2a2a' : '#ffffff', 5);
+    if (G.phase === 'ko' && t < 140) {
+      if (G.perfect && t > 60) big('PERFEITO!', (t >> 2) % 2 ? '#ff2a2a' : '#ffffff', 5);
+      else if (!(window.FX && FX.draw(ctx, 'ko', W / 2, 92, { scale: t < 8 ? 1.7 - t * 0.0875 : 1 }))) big('K.O.', (t >> 2) % 2 ? '#ff2a2a' : '#ffffff', 5);
+    }
     if (G.phase === 'timeover' && t < 80) big('TEMPO!', '#ffd400');
     if ((G.phase === 'ko' || G.phase === 'timeover') && t > 100) {
       const s = G.winner ? G.winner.ch.name + ' VENCEU!' : 'EMPATE!';

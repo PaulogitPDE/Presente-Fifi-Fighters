@@ -263,6 +263,8 @@
       if (m.kind === 'punch' && m.f <= 6 && this.meter >= 100 && c0.pressed('power', 4) && c0.held('punch')) {
         c0.consume('power'); this.meter = 0; this.startSpecial(game, this.ch.specials.super, true); return;
       }
+      // agarrão: o segundo botão chegou logo depois do primeiro (que já tinha começado o golpe)
+      if ((m.kind === 'punch' || m.kind === 'kick') && m.f <= 4 && !m.hit && this.tryThrow(game, opp)) return;
       // cancelar em especial ao acertar
       if (m.hit && m.f <= d.startup + d.active + 6) {
         const c = this.ctrl;
@@ -545,14 +547,14 @@
         case 'special': {
           const d = m.def, [phase, k] = ph(d, m.f, d.dur || d.window || 12);
           if (d.type === 'rising' && !this.onGround() && m.f > d.startup + 14) return { kind: 'jump', up: false };
-          return { kind: 'special', pose: d.pose, phase, k };
+          return { kind: 'special', pose: d.pose, phase, k, slot: m.isSuper ? 'super' : m.key };
         }
         case 'block': return { kind: 'block', crouch: this.crouching };
         case 'hit': return { kind: 'hit', k: Math.min(1, this.stun / 10), crouch: this.crouching };
         case 'dizzy': return { kind: 'dizzy' };
         case 'dash': return this.dashDir === this.facing ? { kind: 'dash' } : { kind: 'backdash' };
-        case 'throw': return { kind: 'special', pose: 'push', phase: this.move && this.move.f < 15 ? 1 : 2, k: this.move ? Math.min(1, Math.max(0, (this.move.f - 15) / 15)) : 1 };
-        case 'thrown': return { kind: 'hit', k: 1 };
+        case 'throw': return { kind: 'throw', phase: this.move && this.move.f < 15 ? 1 : 2 };
+        case 'thrown': return { kind: 'thrown' };
         case 'airhit': return { kind: 'airhit' };
         case 'knockdown': return { kind: 'lying' };
         case 'getup': return { kind: 'getup', k: this.st / 16 };
@@ -580,15 +582,18 @@
       else if (this.vuln > 0) tint = (this.t >> 3) % 3 === 0 ? [255, 220, 60, 0.35] : null;
       const sx = Math.round(this.x - camX), sy = Math.round(GROUND + this.y);
       const useSheet = window.SheetSprites && SheetSprites.ready(this.ch);
+      const sst = useSheet ? this.sheetState() : null;
       if (!useSheet) Sprites.render(this.canvas, this.ch, p, this.anim, tint || (this.alt ? [60, 90, 200, 0.3] : null));
       // sombra
       ctx.fillStyle = 'rgba(0,0,0,0.3)';
       const sw = Math.max(14, 44 * (this.ch.scale || 1) / 1.45 + this.y / 4);
       ctx.fillRect(Math.round(sx - sw / 2), GROUND - 1, Math.round(sw), 3);
       // kart
-      if (this.move && this.move.def && this.move.def.fx === 'kart' && this.state === 'special') { ctx.save(); ctx.translate(sx, sy); ctx.scale(1.5, 1.5); drawKart(ctx, 0, 0, this.facing, this.t); ctx.restore(); }
+      if (this.move && this.move.def && this.move.def.fx === 'kart' && this.state === 'special' && !(useSheet && SheetSprites.hasProp(this.ch, sst, 'kart'))) {
+        if (!(window.FX && FX.draw(ctx, 'kart', sx, sy + 1, { flip: this.facing < 0, ay: 1 }))) { ctx.save(); ctx.translate(sx, sy); ctx.scale(1.5, 1.5); drawKart(ctx, 0, 0, this.facing, this.t); ctx.restore(); }
+      }
       if (this.inv > 0 && this.state === 'getup' && (this.t % 4 < 2)) ctx.globalAlpha = 0.7;
-      if (useSheet) SheetSprites.draw(ctx, this.ch, this.sheetState(), this.anim, sx, sy, this.facing, 1, tint, this.alt);
+      if (useSheet) SheetSprites.draw(ctx, this.ch, sst, this.anim, sx, sy, this.facing, 1, tint, this.alt);
       else {
         ctx.save();
         ctx.translate(sx, sy);
@@ -607,8 +612,9 @@
         }
       }
       // textos
-      this.texts.forEach((tx, i) => {
-        Font.text(ctx, tx.s, sx, sy - 66 * (this.ch.scale || 1) - 8 - tx.t * 0.4 - i * 9, tx.color, { align: 'center', outline: '#000000' });
+      const nt = this.texts.length;
+      this.texts.forEach((tx, i) => { // o mais novo fica embaixo; os antigos sobem por cima
+        Font.text(ctx, tx.s, sx, sy - 66 * (this.ch.scale || 1) - 8 - tx.t * 0.4 - (nt - 1 - i) * 10, tx.color, { align: 'center', outline: '#000000' });
       });
     }
   }
@@ -655,6 +661,7 @@
     draw(ctx, camX) {
       const x = Math.round(this.x - camX), y = Math.round(this.y), f = Math.sign(this.vx) || 1, t = this.t;
       const R = (a, b, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x + a, y + b, w, h); };
+      if (this.drawSprite(ctx, x, y, f, t, R)) return;
       switch (this.d.fx) {
         case 'duckfoot': // pé de pato frito
           R(-6, -3, 10, 6, '#c8862a'); R(-8, -5, 3, 3, '#c8862a'); R(-8, 1, 3, 3, '#c8862a'); R(-9, -2, 3, 3, '#c8862a'); R(4, -1, 5, 2, '#a86a1a'); R(-4, -2, 6, 1, '#e8a84a');
@@ -694,6 +701,31 @@
       }
       if (this.reflected) R(-1, -10, 2, 2, '#ffd400');
     }
+    // versão com os sprites de efeitos (assets/fx); devolve false se não houver sprite
+    fxName() {
+      const fxn = this.d.fx;
+      return fxn === 'dadinho' ? 'cube' + (this.item % 3) : ({ duckfoot: 1, poll: 1, bubble: 1, lightstick: 1, zombie: 1, cookie: 1, clipboard: 1, wave: 1 }[fxn] ? fxn : null);
+    }
+    spriteReady() { const n = this.fxName(); return !!n && !!window.FX && FX.ready(n); }
+    // desenhado 1:1 (sem a ampliação de 1.4 dos efeitos desenhados à mão)
+    drawSprite(ctx, x, y, f, t, R) {
+      const fxn = this.d.fx, name = this.fxName();
+      if (!this.spriteReady()) return false;
+      const o = { flip: f < 0 && fxn !== 'poll' && fxn !== 'clipboard' };
+      if (fxn === 'cookie' || fxn === 'lightstick') o.rot = t * 0.4 * f;
+      if (fxn === 'duckfoot' || fxn === 'dadinho') o.rot = t * 0.22 * f;
+      if (fxn === 'zombie' || fxn === 'poll') y += Math.round(Math.sin(t / 4) * 1.5);
+      if (fxn === 'lightstick') for (let i = 1; i < 4; i++) R(-f * i * 8 - 1, -1, 3, 3, (t >> 2) % 2 ? '#c38cff' : '#ffffff');
+      if (fxn === 'zombie' && t % 8 < 4) R(-f * 13 - 2, 0, 4, 4, '#88ff66');
+      if (fxn === 'duckfoot' && t % 6 < 3) R(-20 * f - 3, -1, 6, 1, '#ffffff');
+      if (fxn === 'wave') FX.draw(ctx, name, x, y, { flip: o.flip, sy: 1.3 + Math.sin(t / 2) * 0.25 });
+      else FX.draw(ctx, name, x, y, o);
+      if (fxn === 'bubble') Font.text(ctx, this.d.text, x, y - 5, '#c0281c', { align: 'center' });
+      if (fxn === 'wave') Font.text(ctx, this.d.text, x, y - 22, '#ffffff', { align: 'center', outline: '#2a4a8a' });
+      if (fxn === 'clipboard') R(-11, -14, 3, 3, '#ffd400');
+      if (this.reflected) R(-1, -17, 3, 3, '#ffd400');
+      return true;
+    }
   }
 
   class RainDrop { // pipoca caindo do céu
@@ -710,8 +742,15 @@
         if (r !== 'miss') { this.dead = true; game.particle(this.x, this.y, 'pop'); }
       }
     }
+    spriteReady() { return !!window.FX && FX.ready('popcorn'); }
     draw(ctx, camX) {
       const x = Math.round(this.x - camX), y = Math.round(this.y);
+      if (this.spriteReady()) { // 1:1
+        ctx.fillStyle = '#fff6d0'; ctx.fillRect(x - 4, y - 4, 8, 8); ctx.fillStyle = '#ffffff'; ctx.fillRect(x - 6, y - 1, 4, 4); ctx.fillRect(x + 1, y - 6, 4, 4);
+        ctx.fillStyle = '#f2c040'; ctx.fillRect(x, y + 1, 3, 3);
+        if (this.big) FX.draw(ctx, 'popcorn', x, y - 14, {});
+        return;
+      }
       ctx.fillStyle = '#fff6d0'; ctx.fillRect(x - 3, y - 3, 6, 6); ctx.fillStyle = '#ffffff'; ctx.fillRect(x - 4, y - 1, 3, 3); ctx.fillRect(x + 1, y - 4, 3, 3);
       ctx.fillStyle = '#f2c040'; ctx.fillRect(x, y + 1, 2, 2);
       if (this.big) Sprites.drawProp(ctx, 'popcorn', x, y - 10, this.t);
@@ -739,6 +778,7 @@
     }
     draw(ctx, camX) {
       const x = Math.round(this.x - camX), y = GROUND, t = this.t;
+      if (this.drawSprite(ctx, x, y, t)) return;
       ctx.save(); ctx.translate(x, y); if (this.f === -1) ctx.scale(-1, 1);
       const R = (a, b, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(a, b, w, h); };
       if (this.d.entity === 'dog') { // Amora: beagle branca, preta e caramelo, com bandeira do Brasil
@@ -762,9 +802,22 @@
       }
       ctx.restore();
     }
+    spriteReady() { const e = this.d.entity; return !!window.FX && FX.ready(e === 'dog' ? 'dog0' : e === 'cats' ? 'cat0' : 'fan0'); }
+    drawSprite(ctx, x, y, t) { // 1:1
+      if (!this.spriteReady()) return false;
+      const e = this.d.entity;
+      let name, o = { flip: this.f < 0, ay: 1 }, yy = y, label = null, ly = 0;
+      if (e === 'dog') { name = 'dog' + ((t >> 2) % 4); if ((t >> 3) % 2) { label = 'AU!'; ly = -36; } }
+      else if (e === 'cats') { name = 'cat' + ((t >> 3) % 2); yy = y - Math.round(Math.abs(Math.sin(t / 6)) * 28); if (t % 30 < 15) { label = 'MIAU'; ly = -34; } }
+      else { name = 'fan' + (((t >> 3) + this.i) % 2); yy = y - Math.round(Math.abs(Math.sin(t / 4 + this.i)) * 4); }
+      FX.draw(ctx, name, x, yy, o);
+      if (label) Font.text(ctx, label, x + this.f * 11, yy + ly, '#ffffff', { align: 'center', outline: '#000' });
+      return true;
+    }
   }
 
   class Trap { // Portaria Facial: portão de reconhecimento facial que nunca funciona
+    spriteReady() { return !!window.FX && FX.ready('gate'); }
     constructor(owner, d) {
       this.owner = owner; this.d = d; this.kind = 'trap';
       this.x = Math.max(20, Math.min(Stages.WIDTH - 20, owner.x + owner.facing * d.dist)); this.t = 0; this.dead = false; this.fired = 0;
@@ -784,6 +837,13 @@
     draw(ctx, camX) {
       const x = Math.round(this.x - camX), y = GROUND, t = this.t;
       const R = (a, b, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x + a, y + b, w, h); };
+      if (this.spriteReady()) { // 1:1
+        FX.draw(ctx, 'gate', x, y, { ay: 1 });
+        R(-3, -53, 5, 4, this.fired ? '#ff3030' : ((t >> 3) % 2 ? '#3aff7a' : '#1a8a3a'));
+        if (!this.fired) { const sy = -28 + Math.sin(t / 6) * 17; ctx.fillStyle = 'rgba(80,255,140,0.35)'; ctx.fillRect(x - 17, y + sy, 34, 2); }
+        else { ctx.fillStyle = 'rgba(255,60,60,0.35)'; ctx.fillRect(x - 21, y - 48, 42, 48); }
+        return;
+      }
       R(-14, -64, 4, 64, '#7a8088'); R(10, -64, 4, 64, '#7a8088'); R(-14, -64, 28, 4, '#7a8088');
       R(-6, -58, 12, 10, '#222'); R(-5, -57, 10, 8, this.fired ? '#ff3030' : ((t >> 3) % 2 ? '#3aff7a' : '#1a8a3a'));
       if (!this.fired) { const sy = -40 + Math.sin(t / 6) * 18; ctx.fillStyle = 'rgba(80,255,140,0.35)'; ctx.fillRect(x - 10, y + sy, 20, 2); }
@@ -817,18 +877,28 @@
       const f = this.owner.facing, x0 = Math.round(this.x0 - camX), y = Math.round(this.y), t = this.t;
       const w = 10 + Math.sin(t) * 2;
       const col = this.d.color;
+      const spr = { army: 'beamPurple', vote: 'beamGold', rice: 'beamWhite' }[this.d.fx];
+      if (spr && window.FX && FX.beam(ctx, spr, x0, y, this.len, f, t, 1)) { this.drawBits(ctx, x0, y, f, t, 9); this.drawRice(ctx, x0, y, f, t); return; }
       ctx.fillStyle = col; ctx.globalAlpha = 0.5;
       ctx.fillRect(f === 1 ? x0 : x0 - this.len, y - w - 3, this.len, (w + 3) * 2);
       ctx.globalAlpha = 1;
       ctx.fillRect(f === 1 ? x0 : x0 - this.len, y - w, this.len, w * 2);
       ctx.fillStyle = '#ffffff'; ctx.fillRect(f === 1 ? x0 : x0 - this.len, y - w / 3, this.len, w / 1.5);
+      this.drawBits(ctx, x0, y, f, t, w);
+      this.drawRice(ctx, x0, y, f, t);
+    }
+    drawRice(ctx, x0, y, f, t) { // panela de arroz na origem (se o quadro do personagem ainda não mostra)
+      const o = this.owner;
+      if (this.d.fx !== 'rice' || (window.SheetSprites && SheetSprites.hasProp(o.ch, o.sheetState(), 'ricecooker'))) return;
+      if (!(window.FX && FX.draw(ctx, 'ricecooker', x0 + f * 2, y + 2, { flip: f < 0 }))) Sprites.drawProp(ctx, 'ricecooker', x0 + f * 2, y + 6, t);
+    }
+    drawBits(ctx, x0, y, f, t, w) {
       for (let i = 0; i < this.len; i += 14) {
         const xx = x0 + f * ((i + t * 6) % this.len);
         if (this.d.fx === 'rice') { ctx.fillStyle = '#f2f2e0'; ctx.fillRect(xx, y - w - 4 + (i % 3) * 8, 3, 2); }
         if (this.d.fx === 'army') { heart(ctx, xx, y - w - 8 + (i % 4) * 7, '#7a3ad8'); }
         if (this.d.fx === 'vote') { ctx.fillStyle = '#0a7a3a'; ctx.fillRect(xx, y - w - 6 + (i % 3) * 9, 5, 4); ctx.fillStyle = '#fff'; ctx.fillRect(xx + 1, y - w - 5 + (i % 3) * 9, 3, 1); }
       }
-      if (this.d.fx === 'rice') Sprites.drawProp(ctx, 'ricecooker', x0 + f * 2, y + 6, t);
     }
   }
 
