@@ -72,6 +72,7 @@
         slot = d.p; ls.set(slotKey(), String(slot)); hideMessage();
         status('JOGADOR ' + (slot + 1), 'ok' + (slot ? ' p2' : ''));
         buzz([30, 40, 30]);
+        maybePrompt();
       } else if (d.t === 'full') { status('SALA CHEIA', 'warn'); message('Já tem 2 celulares conectados nessa sala.'); }
       else if (d.t === 'vib') buzz(d.ms | 0);
       else if (d.t === 'info') $('info').textContent = d.txt || '';
@@ -133,6 +134,7 @@
   }
   function down(e) {
     if ($('pad').hidden) return;
+    if (e.target.closest && e.target.closest('#fs, #msg, #fsBtn')) return; // botões de tela cheia/avisos não contam como jogo
     e.preventDefault();
     wake();
     const x = e.clientX, y = e.clientY;
@@ -162,18 +164,43 @@
 
   // ---------- vibração, tela ligada, tela cheia ----------
   function buzz(p) { try { navigator.vibrate && navigator.vibrate(p); } catch (e) { /* sem vibração */ } }
-  let lock = null, fullTried = false;
+  let lock = null;
   function wake() {
-    if (!fullTried) {
-      fullTried = true;
-      const d = document.documentElement;
-      try {
-        const r = d.requestFullscreen ? d.requestFullscreen({ navigationUI: 'hide' }) : null;
-        if (r && r.then) r.then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {})).catch(() => {});
-      } catch (e) { /* sem tela cheia (iPhone) */ }
-    }
     if (!lock && navigator.wakeLock) navigator.wakeLock.request('screen').then(l => { lock = l; l.addEventListener('release', () => { lock = null; }); }).catch(() => {});
   }
+
+  // ---------- tela cheia ----------
+  // Android/Chrome: API de tela cheia. iPhone: o Safari não deixa sites ficarem em tela cheia,
+  // mas aberto pelo ícone da Tela de Início o controle roda sem a barra do navegador.
+  const docEl = document.documentElement;
+  const canFull = !!(docEl.requestFullscreen || docEl.webkitRequestFullscreen);
+  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const standalone = () => navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches);
+  const isFull = () => !!(document.fullscreenElement || document.webkitFullscreenElement) || standalone();
+  function enterFull() {
+    try {
+      const r = docEl.requestFullscreen ? docEl.requestFullscreen({ navigationUI: 'hide' }) : docEl.webkitRequestFullscreen();
+      const lockLand = () => { try { screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {}); } catch (e) { /* sem trava */ } };
+      if (r && r.then) r.then(lockLand).catch(() => {}); else lockLand();
+    } catch (e) { /* bloqueado pelo navegador */ }
+  }
+  function exitFull() { try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) { /* já saiu */ } }
+  // full = botão de tela cheia | ios = ensinar a Tela de Início | other = só dica
+  const fsMode = canFull ? 'full' : (isIOS ? 'ios' : 'other');
+  function showFullPrompt() {
+    if (isFull()) { $('fs').hidden = true; return; }
+    ['full', 'ios', 'other'].forEach(m => { $('fs-' + m).hidden = m !== fsMode; });
+    $('fs').hidden = false;
+  }
+  let prompted = false;
+  function maybePrompt() { if (!prompted && !isFull()) { prompted = true; showFullPrompt(); } }
+  $('fsGo').addEventListener('click', () => { $('fs').hidden = true; enterFull(); });
+  document.querySelectorAll('.fs-close').forEach(b => b.addEventListener('click', () => { $('fs').hidden = true; }));
+  // botão pequeno no canto do controle
+  $('fsBtn').addEventListener('click', () => { if (isFull() && !standalone()) exitFull(); else if (fsMode === 'full') enterFull(); else showFullPrompt(); });
+  const syncFsBtn = () => { $('fsBtn').hidden = standalone(); $('fsBtn').classList.toggle('on', isFull()); };
+  document.addEventListener('fullscreenchange', syncFsBtn); document.addEventListener('webkitfullscreenchange', syncFsBtn);
+  syncFsBtn();
 
   if (code.length === 4) showPad(); else showJoin();
 })();

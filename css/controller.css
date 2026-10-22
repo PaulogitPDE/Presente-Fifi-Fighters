@@ -132,3 +132,24 @@ html, body {
 button, .join-box button { font: inherit; font-size: 18px; padding: 10px 18px; border-radius: 10px; border: 0; background: #d8322c; color: #fff; box-shadow: 0 4px 0 #7a1410; }
 .play-here { display: inline-block; margin-top: 22px; color: #8a80a8; font-family: Arial, sans-serif; font-size: 14px; }
 body.joining #rotate { display: none !important; }
+
+/* ---------- tela cheia ---------- */
+#fs { position: fixed; inset: 0; z-index: 12; display: flex; align-items: center; justify-content: center; background: rgba(8,6,14,.82); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+.fs-box { max-width: min(440px, 86vw); text-align: center; background: #1a1226; border: 3px solid #ffd400; border-radius: 16px; padding: 16px 22px 18px; font-family: Arial, sans-serif; color: #e6e0f5; box-shadow: 0 10px 40px rgba(0,0,0,.6); }
+.fs-box p { margin: 6px 0; line-height: 1.35; font-size: 15px; }
+.fs-box .fs-title { font-family: "Arial Black", Arial, sans-serif; color: #ffd400; font-size: 20px; margin-bottom: 4px; }
+.fs-box ol { text-align: left; margin: 8px 0 12px; padding-left: 22px; line-height: 1.5; font-size: 14px; }
+.fs-big { display: inline-flex; align-items: center; gap: 10px; margin-top: 10px; font-family: "Arial Black", Arial, sans-serif; font-size: 18px; padding: 12px 22px; }
+.fs-later { display: block; margin: 10px auto 0; background: none; box-shadow: none; color: #8a80a8; font-size: 14px; padding: 4px 8px; text-decoration: underline; font-family: Arial, sans-serif; }
+.fs-ico { position: relative; display: inline-block; width: 18px; height: 18px; flex: none;
+  background:
+    linear-gradient(currentColor, currentColor) left top / 7px 3px no-repeat, linear-gradient(currentColor, currentColor) left top / 3px 7px no-repeat,
+    linear-gradient(currentColor, currentColor) right top / 7px 3px no-repeat, linear-gradient(currentColor, currentColor) right top / 3px 7px no-repeat,
+    linear-gradient(currentColor, currentColor) left bottom / 7px 3px no-repeat, linear-gradient(currentColor, currentColor) left bottom / 3px 7px no-repeat,
+    linear-gradient(currentColor, currentColor) right bottom / 7px 3px no-repeat, linear-gradient(currentColor, currentColor) right bottom / 3px 7px no-repeat; }
+.share-ico { display: inline-block; width: 12px; height: 12px; border: 2px solid #9ff0ff; border-top: 0; border-radius: 0 0 2px 2px; vertical-align: -1px; position: relative; margin: 0 2px; }
+.share-ico::before { content: ''; position: absolute; left: 50%; top: -7px; width: 2px; height: 11px; background: #9ff0ff; transform: translateX(-50%); }
+.share-ico::after { content: ''; position: absolute; left: 50%; top: -8px; width: 6px; height: 6px; border-left: 2px solid #9ff0ff; border-top: 2px solid #9ff0ff; transform: translateX(-50%) rotate(45deg); }
+.fs-btn { position: fixed; z-index: 8; top: max(8px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right)); width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(255,255,255,.08); color: #8a80a8; box-shadow: none; border: 1px solid rgba(255,255,255,.12); }
+.fs-btn.on { color: #ffd400; }
+body.joining .fs-btn { display: none; }

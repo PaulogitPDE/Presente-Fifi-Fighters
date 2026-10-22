@@ -36,6 +36,7 @@ O controle é inspirado no do Super Nintendo: direcional, **Y** soco, **B** chut
 Ele vibra quando o seu personagem apanha (no Android) e mostra quem você escolheu.
 
 - Funciona melhor com todo mundo na mesma Wi-Fi. A conexão vai direto do celular para o notebook (WebRTC); o servidor público do PeerJS só apresenta um aparelho ao outro.
+- Ao conectar, o celular oferece **tela cheia** (sem a barra do navegador). No iPhone, o Safari não permite tela cheia em sites: o aviso ensina a usar *Compartilhar → Adicionar à Tela de Início*, e aberto pelo ícone o controle fica sem barra. O código da sala fica salvo no notebook, então o ícone continua valendo nas próximas vezes. Há também um botão de tela cheia no canto do controle.
 - Se a página do notebook recarregar, os celulares reconectam sozinhos no mesmo lugar (P1/P2).
 - Se um celular cair no meio da luta, o jogo pausa.
 - Para jogar no próprio celular, use `index.html?jogo=1`.

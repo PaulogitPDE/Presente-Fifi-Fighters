@@ -8,6 +8,11 @@
     get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
     set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) { /* sem armazenamento */ } }
   };
+  // o código da sala fica salvo no notebook: o mesmo link/ícone do celular continua valendo na próxima vez
+  const keep = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* sem armazenamento */ } }
+  };
   const genCode = () => Array.from({ length: 4 }, () => ALPHA[Math.random() * ALPHA.length | 0]).join('');
 
   const R = {
@@ -29,8 +34,8 @@
 
   function start() {
     if (!window.Peer) { R.status = 'nolib'; return; }
-    if (!R.code) R.code = ss.get('fifi-room') || genCode();
-    ss.set('fifi-room', R.code);
+    if (!R.code) R.code = keep.get('fifi-room') || genCode();
+    keep.set('fifi-room', R.code);
     R.url = controllerURL();
     R.status = 'connecting';
     try { peer = new window.Peer(PREFIX + R.code, { debug: 0 }); } catch (e) { R.status = 'error'; schedule(5000); return; }
@@ -40,7 +45,7 @@
     peer.on('error', e => {
       if (e && e.type === 'unavailable-id') {
         // a sala ainda está presa à aba anterior: espera um pouco, depois troca de código
-        if (++idTries > 3) { R.code = genCode(); ss.set('fifi-room', R.code); idTries = 0; }
+        if (++idTries > 3) { R.code = genCode(); keep.set('fifi-room', R.code); idTries = 0; }
         restart(3000);
       } else if (e && (e.type === 'network' || e.type === 'server-error' || e.type === 'socket-error' || e.type === 'socket-closed' || e.type === 'browser-incompatible')) {
         R.status = e.type === 'browser-incompatible' ? 'nolib' : 'error';
