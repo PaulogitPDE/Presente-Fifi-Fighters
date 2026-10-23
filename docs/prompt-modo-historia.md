@@ -161,11 +161,23 @@ Cenário: Prefeitura de Sorocaba (Palácio dos Tropeiros), com o lago e os patos
 - **H100_beijo** — A Min pulando no Guti e dando um beijo nele (fofo, com corações e brilhos).
 - **H101_guti_corado** — O Guti corado e sorrindo, abraçando a Min ("Ah, quer saber? Está tudo bem agora...").
 
-## CENA 8 — Créditos (café da tarde das cores)
+## CENA 8 — O desafio de aniversário (7ª luta: Guti × Min) e o mistério do grito
+
+Esta cena acontece logo depois do beijo (H101). A Min diz, de brincadeira, que o presente só vem depois do "desafio de aniversário", e os dois fazem uma **luta amistosa** na festa, com a turma torcendo. A luta é só por diversão: a história continua com qualquer resultado.
+
+- **H112_min_desafio** — A Min com chapéu de festa, piscando e fazendo pose de luta, convidando o Guti para o desafio ("O presente só vem depois do desafio de aniversário!").
+- **H113_guti_vs_min** — Os dois frente a frente na sala decorada, ambos sorrindo, com os amigos torcendo ao fundo (imagem de abertura da luta).
+- **H114_pos_luta_min** — Depois da luta: os dois deitados no chão, cobertos de confete, rindo juntos.
+- **H115_guti_pergunta_grito** — O Guti, ainda no chão, virando o rosto para a Min, curioso ("Mas e aquele grito no telefone?").
+- **H116_revelacao_grito** — *Flashback* cômico, com bordas de lembrança (tons mais suaves): de manhã, a Min montando a festa e falando com o Guti no celular, enquanto a Amora pula na mesa e derruba o bolo no chão. A Min grita, com as mãos no rosto, e o celular cai da mão dela.
+- **H117_min_corre_bolo** — *Flashback*: a Min, apressada e tensa, deixando a Amora com a Pam e saindo correndo para comprar um bolo novo (isso explica por que a Pam e o Belipe disseram que ela parecia tensa e com pressa).
+- **H118_min_envergonhada** — De volta à festa: a Min envergonhada, rindo sem graça, com a Amora de "carinha de culpada" ao lado e o bolo novo na mesa ao fundo. O Guti rindo.
+
+## CENA 9 — Créditos (café da tarde das cores)
 
 Frames da festa para passar durante os créditos. Deixe espaço livre nos cantos para os nomes aparecerem:
 
-- **H102_creditos_bolo** — Todos cantando parabéns em volta do bolo colorido, o Guti assoprando as velas.
+- **H102_creditos_bolo** — Todos cantando parabéns em volta do bolo novo (colorido), o Guti assoprando as velas.
 - **H103_creditos_selfie** — Uma selfie em grupo, todos fazendo caretas e sinais de paz.
 - **H104_creditos_amora** — A Amora tentando roubar um doce da mesa, e a Min rindo.
 - **H105_creditos_pv_belipe** — O PV e o Belipe disputando o último pedaço de bolo.
@@ -180,20 +192,6 @@ Frames da festa para passar durante os créditos. Deixe espaço livre nos cantos
 
 - **H110_capa_modo_historia** — Arte de capa do Modo História: o Guti em destaque, determinado, segurando o celular, com os outros personagens em silhuetas ao fundo e o skyline de Sorocaba.
 - **H111_fim** — Tela de "FIM": o Guti e a Min de costas, sentados olhando o pôr do sol, com a Amora entre eles.
-
-## OPCIONAL — Sugestão: uma luta com a Min
-
-Uma ideia para incluir a Min na história: depois do beijo, ela diz, de brincadeira, que o presente só vem depois do "desafio de aniversário", e os dois fazem uma **luta amistosa** na festa. Se for aprovado, gere também:
-
-- **H112_min_desafio** — A Min com chapéu de festa, piscando e fazendo pose de luta, convidando o Guti para o desafio.
-- **H113_guti_vs_min** — Os dois frente a frente na sala decorada, ambos sorrindo, com os amigos torcendo ao fundo.
-- **H114_pos_luta_min** — Os dois deitados no chão, cobertos de confete, rindo juntos.
-
-E, para fechar o mistério do grito no começo da história:
-
-- **H115_revelacao_grito** — *Flashback* cômico: a Min, no começo do dia, montando a festa, gritando porque a Amora derrubou o bolo (ou estourou um balão), com o celular caindo da mão dela.
-
----
 
 ## SPRITES — Belipe Bravo (para a luta da meia maratona)
 
@@ -215,5 +213,5 @@ Regras das folhas de sprites (iguais às anteriores):
 ## Ordem de entrega sugerida
 
 1. As folhas de sprites do Belipe Bravo.
-2. As cenas 1 a 8, na ordem numérica.
-3. As telas extras e os opcionais, se aprovados.
+2. As cenas 1 a 9, na ordem em que aparecem neste documento.
+3. As telas extras.
