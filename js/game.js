@@ -98,6 +98,21 @@
     R(x, y, w, 1, '#ffd400'); R(x, y + h - 1, w, 1, '#5a3a8a');
     if (title) { R(x, y, w, 12, '#2a1450'); T(title, x + w / 2, y + 3, '#ffd400', { align: 'center' }); }
   }
+  // ---------- api para o Modo História (js/story.js) ----------
+  function storyMenu(items) {
+    starBg('#140a24', '#3a2a6a');
+    logo(W / 2, 2, 2);
+    T('MODO HISTORIA', W / 2, 42, '#ffd400', { scale: 2, align: 'center', outline: '#000' });
+    T('O SUMICO DA MIN', W / 2, 64, '#9ff0ff', { align: 'center', shadow: '#000' });
+    panel(W / 2 - 100, 80, 200, items.filter(i => !i.hidden).length * 13 + 12);
+    runMenu(items, G.menu, W / 2, 87, { w: 186, lh: 13 });
+    T('P1 E SEMPRE O GUTI. O P2 JOGA COM QUEM', W / 2, 164, '#cfc8e8', { align: 'center', shadow: '#000' });
+    T('APARECER NO CAMINHO (OU DEIXE COM A CPU).', W / 2, 174, '#cfc8e8', { align: 'center', shadow: '#000' });
+    T('NA HISTORIA: SOCO AVANCA  START ABRE O MENU', W / 2, 196, '#6a6088', { align: 'center' });
+    if (backKey()) { Sound.play('select'); go('title'); }
+  }
+  window.Game = { startMatch: () => startMatch(), go: s => go(s), confirmKey, backKey, anyStart, navUp, navDown, storyMenu };
+
   // ---------- celular como controle ----------
   const RM = () => window.Remote;
   function slotDots(x, y, align) {
@@ -204,7 +219,7 @@
   }
 
   // ---------- TÍTULO / MENU PRINCIPAL ----------
-  const MODE_NAMES = { arcade: 'ARCADE', cpu: 'VERSUS CPU', '2p': 'VERSUS', training: 'TREINO' };
+  const MODE_NAMES = { arcade: 'ARCADE', cpu: 'VERSUS CPU', '2p': 'VERSUS', training: 'TREINO', story: 'MODO HISTORIA' };
   function title() {
     starBg('#140a24', '#3a2a6a');
     for (let i = 0; i < 8; i++) R(0, 196 + i * 2, W, 2, i % 2 ? '#22104a' : '#2a1458');
@@ -213,6 +228,7 @@
     T('O JOGO DE LUTA DOS FIFIS', W / 2, 54, '#9ff0ff', { align: 'center', shadow: '#000' });
     panel(W / 2 - 84, 64, 168, 98);
     runMenu([
+      { label: 'MODO HISTORIA', act: () => go('storymenu') },
       { label: 'ARCADE', act: () => startSelect('arcade') },
       { label: 'VERSUS CPU', act: () => startSelect('cpu') },
       { label: 'VERSUS 2 JOGADORES', act: () => startSelect('2p') },
@@ -222,7 +238,7 @@
       { label: 'CONTROLE NO CELULAR', act: () => go('phone') },
       { label: 'OPCOES', act: () => go('options') },
       { label: 'CREDITOS', act: () => go('credits') }
-    ], G.menu, W / 2, 69, { w: 150, lh: 10 });
+    ], G.menu, W / 2, 68, { w: 150, lh: 9.4 });
     T('M: SOM  F: TELA CHEIA', W - 4, 4, '#6a5a9a', { align: 'right' });
     if (Input.pads()) T('CONTROLE CONECTADO: ' + Input.pads(), 4, 4, '#7ad07a');
     if (RM() && (RM().connected(0) || RM().connected(1))) slotDots(4, Input.pads() ? 14 : 4, 'left');
@@ -579,17 +595,18 @@
     Stages.use(G.stage);
     const a = byId(G.picks[0]), b = byId(G.picks[1]);
     let c2;
-    if (G.mode === '2p') c2 = new HumanCtrl(1);
+    if (G.mode === '2p' || (G.mode === 'story' && window.Story && Story.twoPlayer)) c2 = new HumanCtrl(1);
     else if (G.mode === 'arcade') c2 = new AICtrl(arcadeLevel());
     else c2 = new AICtrl(G.opts.difficulty);
     G.fighters = [new Fighter(a, 0, new HumanCtrl(0)), new Fighter(b, 1, c2)];
     G.fighters.forEach(f => { f.meter = 0; f.perfects = 0; });
-    if (RM()) { RM().setInfo(0, a.name); RM().setInfo(1, G.mode === '2p' ? b.name : 'CPU JOGANDO'); }
+    if (RM()) { RM().setInfo(0, a.name); RM().setInfo(1, G.mode === '2p' || (G.mode === 'story' && Story.twoPlayer) ? b.name : 'CPU JOGANDO'); }
     if (a.id === b.id) G.fighters[1].alt = true;
     G.training = G.mode === 'training' ? (G.training || { dummy: 'stand', meter: 'inf', regen: true, hitboxes: false, inputs: true }) : null;
     if (G.training) { G.training.noKO = true; G.training.lastDmg = 0; G.training.comboDmg = 0; G.training.combo = 0; G.training.maxCombo = 0; G.inputLog = []; applyDummy(); }
     G.wins = [0, 0]; G.round = 1;
     G.spectators = CH.filter(c => c.id !== a.id && c.id !== b.id);
+    if (G.mode === 'story' && window.Story) Story.onMatchStart(G);
     G.specCanvas = G.spectators.map(() => Sprites.newCanvas());
     go('fight');
     Sound.playMusic(G.stage.music);
@@ -629,6 +646,7 @@
   };
   G.onKO = (loser, winner) => {
     if (G.phase === 'ko') return;
+    G.storyCut = !!(window.Story && Story.cutOnKO(loser));
     G.fighting = false; G.phase = 'ko'; G.phaseT = 0; G.koSlow = 50;
     G.winner = winner; Sound.play('ko'); G.flash('#ffffff'); G.shake(6);
     G.perfect = winner.hp >= MAX_HP;
@@ -656,6 +674,7 @@
         G.freezeT--;
       } else {
         a.update(G); b.update(G);
+        if (G.mode === 'story' && window.Story) Story.fightTick(G);
         // os dois golpes são lidos antes de aplicar, para trocarem golpe no mesmo quadro
         const hits = [a, b].map(f => { const hb = f.activeHitbox(); return hb && overlap(hb, G.other(f).hurtbox()) ? [f, hb, f.move] : null; });
         hits.forEach(h => {
@@ -765,6 +784,7 @@
       if (G.phaseT === 70) Sound.play('announcer', 'fight');
       if (G.phaseT > 100) { G.phase = 'fight'; G.fighting = true; }
     } else if (G.phase === 'ko' || G.phase === 'timeover') {
+      if (G.storyCut && G.phaseT > 34) { G.storyCut = false; G.wins[0] = need; endMatch(); return; }
       if (G.phaseT === 80 && G.winner) { G.winner.state = 'win'; G.winner.st = 0; G.winner.move = null; G.winner.vx = 0; }
       if (G.phaseT === 80 && G.winner) G.wins[G.fighters.indexOf(G.winner)]++;
       if (G.phaseT > 200) {
@@ -775,6 +795,7 @@
   }
   function endMatch() {
     G.matchWinner = G.wins[0] > G.wins[1] ? 0 : (G.wins[1] > G.wins[0] ? 1 : -1);
+    if (G.mode === 'story' && window.Story) { Story.onMatchEnd(G.matchWinner); return; }
     if (G.matchWinner >= 0) {
       const wid = G.fighters[G.matchWinner].ch.id;
       if (G.mode !== 'arcade' || G.matchWinner === 0) { G.save.wins[wid] = (G.save.wins[wid] || 0) + 1; saveGame(); }
@@ -891,8 +912,8 @@
       const hurt = f.state === 'hit' || f.state === 'airhit' || f.state === 'ko' || f.state === 'dizzy';
       photoOr(f.ch, 's', pxx, 2, 27, 30);
       if (hurt && (G.time >> 2) % 2) R(pxx, 2, 27, 30, 'rgba(255,40,40,0.35)');
-      const tag = i === 0 ? '' : (G.mode === '2p' ? '' : (G.training ? ' (BONECO)' : ' (CPU)'));
-      T(f.ch.name + tag, i === 0 ? x : x + BW, y + 11, '#ffffff', { align: i === 0 ? 'left' : 'right', shadow: '#000' });
+      const tag = i === 0 ? '' : (G.mode === '2p' || (G.mode === 'story' && Story.twoPlayer) ? '' : (G.training ? ' (BONECO)' : ' (CPU)'));
+      T((f.rage && f.storyLabel ? f.storyLabel : f.ch.name) + tag, i === 0 ? x : x + BW, y + 11, '#ffffff', { align: i === 0 ? 'left' : 'right', shadow: '#000' });
       if (!G.training) for (let w = 0; w < need; w++) {
         const wx = i === 0 ? x + BW - 8 - w * 9 : x + w * 9;
         R(wx, y + 11, 7, 7, '#000'); R(wx + 1, y + 12, 5, 5, G.wins[i] > w ? '#ffd400' : '#333');
@@ -986,7 +1007,7 @@
       { label: 'RESETAR POSICAO', act: () => { resetTrainingPos(); resume(); }, hidden: !G.training },
       { label: 'REINICIAR LUTA', act: () => { G.paused = false; startMatch(); }, hidden: !!G.training },
       { label: 'OPCOES', act: () => { P.view = 'options'; P.i = 0; } },
-      { label: 'TROCAR PERSONAGENS', act: () => { G.paused = false; startSelect(); }, hidden: G.mode === 'arcade' },
+      { label: 'TROCAR PERSONAGENS', act: () => { G.paused = false; startSelect(); }, hidden: G.mode === 'arcade' || G.mode === 'story' },
       { label: 'SAIR PARA O MENU', act: () => { P.view = 'confirm'; P.i = 0; } }
     ];
     const n = items.filter(i => !i.hidden).length;
@@ -1049,7 +1070,7 @@
   }
 
   // ---------- Laço principal ----------
-  const SCENES = { phone, title, options, howto, moves, credits, select, stage: stageSel, ladder, continue: arcadeContinue, gameover, ending, vs, fight, result };
+  const SCENES = { story: () => { R(0, 0, W, H, '#000'); Story.scene(); }, storymenu: () => Story.menuScene(), phone, title, options, howto, moves, credits, select, stage: stageSel, ladder, continue: arcadeContinue, gameover, ending, vs, fight, result };
   let last = performance.now(), acc = 0;
   const STEP = 1000 / 60;
   let started = false;
@@ -1064,6 +1085,7 @@
         if (Input.key('KeyF')) toggleFull();
         G.t++;
         SCENES[G.scene]();
+        if (G.scene !== 'story' && window.Story) Story.hide();
       }
       drawToasts();
       Input.tick();

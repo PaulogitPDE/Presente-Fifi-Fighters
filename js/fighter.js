@@ -582,6 +582,7 @@
       else if (this.buff > 0) tint = (this.t >> 2) % 2 ? [100, 255, 60, 0.35] : null;
       else if (this.poison > 0) tint = (this.t >> 3) % 2 ? [120, 200, 80, 0.35] : null;
       else if (this.vuln > 0) tint = (this.t >> 3) % 3 === 0 ? [255, 220, 60, 0.35] : null;
+      else if (this.rage) tint = [255, 40, 20, 0.16 + Math.abs(Math.sin(this.t / 10)) * 0.12];
       const sx = Math.round(this.x - camX), sy = Math.round(GROUND + this.y);
       const useSheet = window.SheetSprites && SheetSprites.ready(this.ch);
       const sst = useSheet ? this.sheetState() : null;

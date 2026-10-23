@@ -23,6 +23,15 @@ Roda direto no navegador, sem instalar nada: é só abrir o `index.html`.
 - **Contra-golpe:** acertar o oponente na preparação de um golpe dá 25% a mais de dano.
 - `M` liga/desliga o som · `F` tela cheia · a luta pausa sozinha se você trocar de aba.
 
+## Modo História — "O Sumiço da Min"
+
+O Guti volta da China, ouve um grito da Min no celular e sai procurando por ela por Sorocaba, enfrentando os amigos pelo caminho: Pam, Belipe (bravo), Alex, Valeska, PV, Ana e, no fim, a Min numa luta amistosa de aniversário.
+
+- O **P1 é sempre o Guti**. O **P2** joga com quem aparece na história (ou deixe com a CPU no menu do modo).
+- Nas cenas: **soco/Enter/clique** avança o texto, **START/ESC** abre o menu (pular cena ou sair).
+- Algumas lutas só seguem se o Guti ganhar; se perder, dá para tentar de novo. O progresso fica salvo por capítulo.
+- As ilustrações ficam em `assets/story/` e a lista em `js/storymeta.js`. Para adicionar ou trocar imagens: `python3 tools/importar_historia.py <pasta>`.
+
 ## Celular como controle
 
 Dá para jogar com o celular no lugar do teclado (o teclado e o controle continuam funcionando juntos):
@@ -89,4 +98,5 @@ Os Fifis que não estão lutando aparecem torcendo no fundo.
 - `js/fighter.js`: lutadores e golpes; `js/ai.js`: CPU
 - `controle.html`, `js/controller.js` e `css/controller.css`: o controle no celular; `js/remote.js`: o lado do notebook (sala, QR code, P1/P2)
 - `js/vendor/`: PeerJS e gerador de QR code (licença MIT)
+- `js/story.js`: roteiro e cenas do Modo História; `tools/importar_historia.py`: importa as ilustrações
 - `js/stages.js`: cenários; `js/game.js`: telas e HUD; `js/audio.js`: sons e música chiptune (gerados por código)
