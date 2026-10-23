@@ -13,7 +13,7 @@
   const pick = arr => Array.isArray(arr) ? arr[Math.random() * arr.length | 0] : arr;
   // falas: as de rivalidade (ch.vs[oponente]) aparecem na maioria das vezes
   const line = (ch, opp, kind) => { const v = ch.vs && ch.vs[opp.id] && ch.vs[opp.id][kind]; return v && Math.random() < 0.7 ? v : pick(ch[kind] || ['...']); };
-  Sprites.loadPortraits(CH);
+  Sprites.loadPortraits(CH.concat([{ id: 'belipe_bravo' }]));
   if (window.SheetSprites) SheetSprites.load(CH);
 
   // ---------- Escala da tela ----------
@@ -910,7 +910,7 @@
       const pxx = i === 0 ? 2 : W - 29;
       R(pxx - 1, 1, 29, 32, '#000'); R(pxx, 2, 27, 30, i === 0 ? '#5a1a2a' : '#1a2a5a');
       const hurt = f.state === 'hit' || f.state === 'airhit' || f.state === 'ko' || f.state === 'dizzy';
-      photoOr(f.ch, 's', pxx, 2, 27, 30);
+      photoOr(f.rage && f.ch.id === 'belipe' ? Object.assign({}, f.ch, { id: 'belipe_bravo' }) : f.ch, 's', pxx, 2, 27, 30);
       if (hurt && (G.time >> 2) % 2) R(pxx, 2, 27, 30, 'rgba(255,40,40,0.35)');
       const tag = i === 0 ? '' : (G.mode === '2p' || (G.mode === 'story' && Story.twoPlayer) ? '' : (G.training ? ' (BONECO)' : ' (CPU)'));
       T((f.rage && f.storyLabel ? f.storyLabel : f.ch.name) + tag, i === 0 ? x : x + BW, y + 11, '#ffffff', { align: i === 0 ? 'left' : 'right', shadow: '#000' });

@@ -61,9 +61,9 @@
 
   add({ chapter: 'A meia maratona', music: 'rua' },
     show('H31_maratona_chegada', 1900, { place: 'MEIA MARATONA DE SOROCABA' }),
-    say('H32_belipe_cruza_chegada', 'BELIPE', '#$%*! Que tempo horrível! #$%!', { shake: true }),
+    say('H32_belipe_cruza_chegada', 'BELIPE', '#$%*! Que tempo horrível! #$%!', { shake: true, face: 'belipe_bravo' }),
     say('H33_guti_acusa_belipe', 'GUTI', 'Belipe! Me diz onde ela está!!'),
-    say('H34_belipe_agora_nao', 'BELIPE', 'Guti, agora não. Eu não estou no clima de brincadeiras. Depois que eu me acalmar, eu devolvo ela pra você.'),
+    say('H34_belipe_agora_nao', 'BELIPE', 'Guti, agora não. Eu não estou no clima de brincadeiras. Depois que eu me acalmar, eu devolvo ela pra você.', { face: 'belipe_bravo' }),
     say('H35_guti_sem_escolha', 'GUTI', 'Você não me dá escolha.'),
     show('H36_guti_vs_belipe', 1600, { vs: true }),
     { fight: { p2: 'belipe', stage: 'rua', rage: true, label: 'BELIPE BRAVO' } },
@@ -193,6 +193,15 @@
     return cache[src];
   }
   const ok = im => im && im.complete && im.naturalWidth > 0;
+  // retratos da caixa de diálogo (assets/story/portraits/<id>.png)
+  const FACES = { GUTI: 'guti', MIN: 'min', PAM: 'pam', BELIPE: 'belipe', ALEX: 'alex', VALESKA: 'valeska', PV: 'pv', ANA: 'ana', AMORA: 'amora' };
+  const faceCache = {};
+  function face(s) {
+    const id = s.face || FACES[s.who]; if (!id) return null;
+    if (!faceCache[id]) { const im = new Image(); im.src = 'assets/story/portraits/' + id + '.png'; faceCache[id] = im; }
+    return ok(faceCache[id]) ? faceCache[id] : null;
+  }
+  Object.values(FACES).concat(['belipe_bravo']).forEach(id => face({ face: id }));
   function preload(from) {
     for (let i = from; i < Math.min(S.length, from + 6); i++) if (S[i].f) files(S[i].f).forEach(img);
     if (S[from] && S[from].credits) CREDIT_FRAMES.forEach(f => files(f).forEach(img));
@@ -317,21 +326,26 @@
   function drawBox(s) {
     const txt = s.t || '', shown = txt.slice(0, st.chars);
     const font = (s.think ? 'italic ' : '') + 'bold 31px "Trebuchet MS", Verdana, Arial, sans-serif';
-    const lines = wrap(txt, CW - 200, font).slice(0, 3);
-    const bx = 60, bw = CW - 120, bh = 70 + lines.length * 40, by = CH - bh - 30;
+    const fc = face(s), pad = fc ? 250 : 0;
+    const lines = wrap(txt, CW - 200 - pad, font).slice(0, 3);
+    const bx = 60, bw = CW - 120, bh = Math.max(fc ? 150 : 0, 70 + lines.length * 40), by = CH - bh - 30;
     cx.fillStyle = s.think ? 'rgba(20,30,60,.82)' : 'rgba(12,8,24,.86)';
     rr(bx, by, bw, bh, 18); cx.fill();
     cx.strokeStyle = s.think ? '#9ff0ff' : '#ffd400'; cx.lineWidth = 4; cx.stroke();
+    if (fc) { // retrato saindo por cima da caixa
+      cx.save(); rr(bx, by - 120, 250, bh + 120, 18); cx.clip();
+      cx.drawImage(fc, bx + 5, by + bh - 245, 240, 240); cx.restore();
+    }
     if (s.who) {
       const name = s.who + (s.think ? ' (pensando)' : '') + (s.phone ? ' (no celular)' : '');
       cx.font = 'bold 26px "Trebuchet MS", Verdana, Arial, sans-serif';
       const nw = cx.measureText(name).width + 36;
-      cx.fillStyle = COLORS[s.who] || '#ffd400'; rr(bx + 26, by - 22, nw, 44, 12); cx.fill();
-      cx.fillStyle = '#140a24'; cx.fillText(name, bx + 44, by + 9);
+      cx.fillStyle = COLORS[s.who] || '#ffd400'; rr(bx + 26 + pad, by - 22, nw, 44, 12); cx.fill();
+      cx.fillStyle = '#140a24'; cx.fillText(name, bx + 44 + pad, by + 9);
     }
     cx.font = font; cx.fillStyle = '#ffffff';
     let left = shown.length;
-    lines.forEach((l, i) => { const part = l.slice(0, Math.max(0, left)); left -= l.length + 1; cx.fillText(part, bx + 46, by + 64 + i * 40); });
+    lines.forEach((l, i) => { const part = l.slice(0, Math.max(0, left)); left -= l.length + 1; cx.fillText(part, bx + 46 + pad, by + 64 + i * 40); });
     if (st.chars >= txt.length && (st.t >> 4) % 2) { cx.fillStyle = '#ffd400'; cx.beginPath(); cx.moveTo(bx + bw - 50, by + bh - 34); cx.lineTo(bx + bw - 30, by + bh - 34); cx.lineTo(bx + bw - 40, by + bh - 22); cx.fill(); }
   }
   function drawPlace(txt, t) {
@@ -409,9 +423,9 @@
       drawBox(s);
       if (adv) { if (st.chars < s.t.length) st.chars = s.t.length; else { Sound.play('move'); next(); } }
     } else if (st.t * 16.67 > (s.auto || 1500) || (adv && st.t > 8)) next();
-    // dica de controles
-    cx.font = '18px "Trebuchet MS", Arial, sans-serif'; cx.fillStyle = 'rgba(255,255,255,.45)'; cx.textAlign = 'right';
-    cx.fillText('SOCO / CLIQUE: avançar    START / ESC: menu', CW - 24, 30); cx.textAlign = 'left';
+    // dica de controles (só no começo)
+    if (st.i < 8) cx.font = '18px "Trebuchet MS", Arial, sans-serif'; cx.fillStyle = 'rgba(255,255,255,.45)'; cx.textAlign = 'right';
+    if (st.i < 8) cx.fillText('SOCO / CLIQUE: avançar    START / ESC: menu', CW - 24, 30); cx.textAlign = 'left';
   };
   function overlayPanel(title, items, P, sub) {
     cx.fillStyle = 'rgba(0,0,0,.72)'; cx.fillRect(0, 0, CW, CH);

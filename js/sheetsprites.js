@@ -22,7 +22,16 @@
         Object.keys(M).forEach(n => { if (n[0] === '_') return; const im = new Image(); im.src = 'assets/sprites2/' + ch.id + '_' + n + '.png'; imgs2[ch.id][n] = im; });
       }
     });
-    Object.keys(FXM).forEach(n => { const im = new Image(); im.src = 'assets/fx/' + n + '.png'; fx[n] = im; });
+    Object.keys(FXM).forEach(n => { if (fx[n]) return; const im = new Image(); im.src = 'assets/fx/' + n + '.png'; fx[n] = im; });
+    // variações (ex.: belipe_bravo) também são carregadas
+    list.forEach(ch => Object.keys(META2).forEach(id => { if (id.startsWith(ch.id + '_') && !imgs2[id]) load([variant(ch, id.slice(ch.id.length + 1))]); }));
+  }
+  // versão alternativa de um personagem (mesmos dados, outros quadros): ex. variant(belipe, 'bravo')
+  const variants = {};
+  function variant(ch, name) {
+    const id = ch.id + '_' + name;
+    if (!META2[id]) return null;
+    return variants[id] || (variants[id] = Object.assign({}, ch, { id, base: ch.id }));
   }
   function ready1(ch) { const s = imgs[ch.id]; return !!s && FRAMES.every(f => ok(s[f])); }
   function ready2(ch) { const s = imgs2[ch.id]; return !!s && Object.keys(s).every(n => ok(s[n])); }
@@ -121,6 +130,7 @@
     pv: { n: 'sp0', fwd: 'intro', down: 'sp1', super: 'sp0' },
     ana: { n: 'sp0', fwd: 'punch', down: 'sp1', super: 'sp0' },
     belipe: { n: 'sp1', fwd: 'sp0', down: 'sp1', super: 'sp0' },
+    belipe_bravo: { n: 'sp1', fwd: 'sp0', down: 'sp1', super: 'sp0' },
     pam: { n: 'sp0', fwd: 'sp1', down: 'victory', super: 'intro' },
     alex: { n: 'sp0', fwd: 'sp1', down: 'punch', super: 'victory' },
     valesca: { n: 'sp0', fwd: 'uppercut', down: 'sp1', super: 'sp0' }
@@ -255,6 +265,6 @@
     return true;
   }
 
-  window.SheetSprites = { load, ready, ready2, draw, hasProp, META, META2 };
+  window.SheetSprites = { load, ready, ready2, draw, hasProp, variant, META, META2 };
   window.FX = { ready: fxReady, draw: drawFX, beam: drawBeam, META: FXM };
 })();

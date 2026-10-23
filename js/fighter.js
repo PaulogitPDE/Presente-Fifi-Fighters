@@ -596,7 +596,10 @@
         if (!(window.FX && FX.draw(ctx, 'kart', sx, sy + 1, { flip: this.facing < 0, ay: 1 }))) { ctx.save(); ctx.translate(sx, sy); ctx.scale(1.5, 1.5); drawKart(ctx, 0, 0, this.facing, this.t); ctx.restore(); }
       }
       if (this.inv > 0 && this.state === 'getup' && (this.t % 4 < 2)) ctx.globalAlpha = 0.7;
-      if (useSheet) SheetSprites.draw(ctx, this.ch, sst, this.anim, sx, sy, this.facing, 1, tint, this.alt);
+      // Belipe Bravo (modo história): usa os quadros com a cara brava enquanto estiver nervoso
+      const vch = this.rage && SheetSprites.variant ? SheetSprites.variant(this.ch, 'bravo') : null;
+      const dch = vch && SheetSprites.ready2(vch) ? vch : this.ch;
+      if (useSheet) SheetSprites.draw(ctx, dch, sst, this.anim, sx, sy, this.facing, 1, dch !== this.ch ? (this.flashT > 0 && this.flashT % 2 ? tint : null) : tint, this.alt);
       else {
         ctx.save();
         ctx.translate(sx, sy);
