@@ -99,8 +99,11 @@
     if (title) { R(x, y, w, 12, '#2a1450'); T(title, x + w / 2, y + 3, '#ffd400', { align: 'center' }); }
   }
   // ---------- api para o Modo História (js/story.js) ----------
-  function storyMenu(items) {
-    starBg('#140a24', '#3a2a6a');
+  function storyMenu(items, bg) {
+    if (bg) { // arte de fundo (js/story.js), escurecida para o texto aparecer
+      ctx.imageSmoothingEnabled = true; ctx.drawImage(bg, 0, 0, W, H); ctx.imageSmoothingEnabled = false;
+      R(0, 0, W, H, 'rgba(10,6,24,0.35)');
+    } else starBg('#140a24', '#3a2a6a');
     logo(W / 2, 2, 2);
     T('MODO HISTORIA', W / 2, 42, '#ffd400', { scale: 2, align: 'center', outline: '#000' });
     T('O SUMICO DA MIN', W / 2, 64, '#9ff0ff', { align: 'center', shadow: '#000' });

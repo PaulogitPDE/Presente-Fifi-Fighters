@@ -1,6 +1,6 @@
 // Sprites dos personagens a partir das folhas de animação.
 // v2: assets/sprites2/<id>_<quadro>.png (parado, andando, golpes, reações, especiais e vitória)
-// v1: assets/sprites/<id>_<pose>.png (model sheets antigos, usados quando falta algum quadro)
+// v1: assets/sprites/<id>_<pose>.png (model sheets antigos, só para personagens sem as folhas v2)
 // Também carrega os efeitos de assets/fx/ (projéteis, faíscas, ajudantes).
 (function () {
   const META = window.SHEET_META || {};
@@ -12,7 +12,7 @@
 
   function load(list) {
     list.forEach(ch => {
-      if (META[ch.id]) {
+      if (META[ch.id] && !META2[ch.id]) { // só quem ainda não tem as folhas novas
         imgs[ch.id] = {};
         FRAMES.forEach(f => { const im = new Image(); im.src = 'assets/sprites/' + ch.id + '_' + f + '.png'; imgs[ch.id][f] = im; });
       }

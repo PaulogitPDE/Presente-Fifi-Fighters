@@ -7,15 +7,15 @@
 
   // ---------- roteiro ----------
   // Passos: { f: frame, who: quem fala, t: texto, think: pensamento, auto: ms (avança sozinho), anim: ms por quadro,
-  //           shake: tremer, sfx: som, music: música, place: legenda de lugar }
-  //         { fight: { p2, stage, mustWin, rage, cutOnKO, label } }  |  { credits: true }  |  { chapter: 'nome' }
+  //           shake: tremer, sfx: som, music: música, place: legenda de lugar, ifLost: frame usado se o P2 venceu a luta anterior }
+  //         { fight: { p2, stage, mustWin, rage, cutOnKO, label } }  |  { credits: true }  |  { chapter: 'nome', card: frame de fundo }
   const S = [];
   const add = (...a) => a.forEach(x => S.push(x));
   const say = (f, who, t, o) => Object.assign({ f, who, t }, o || {});
   const think = (f, who, t, o) => Object.assign({ f, who, t, think: true }, o || {});
   const show = (f, ms, o) => Object.assign({ f, auto: ms || 1600 }, o || {});
 
-  add({ chapter: 'A volta da China', music: 'select' },
+  add({ chapter: 'A volta da China', card: 'CAP01_a_volta_da_china', music: 'select' },
     show('H110_capa_modo_historia', 2600, { title: true }),
     say('H01_carro_guti_celular', 'GUTI', 'Oi, amor! Já estou na estrada. Logo, logo eu chego aí.', { anim: 260 }),
     say('H01_carro_guti_celular', 'MIN', 'Aaah, finalmente! Estou morrendo de saudade!', { phone: true }),
@@ -31,7 +31,7 @@
     show('H08_carro_estrada_rapido', 1800, { shake: true }),
     show('H09_chegada_sorocaba', 2200, { place: 'SOROCABA' }));
 
-  add({ chapter: 'A casa vazia', music: 'gameover' },
+  add({ chapter: 'A casa vazia', card: 'CAP02_a_casa_vazia', music: 'gameover' },
     say('H10_predio_guti', 'GUTI', 'Min!'),
     say('H11_guti_entra_casa', 'GUTI', 'Amor, cheguei! Min?'),
     say('H12_guti_procura_min', 'GUTI', 'Min? Cadê você?'),
@@ -41,7 +41,7 @@
     show('H16_guti_olhos_cerrados', 1400),
     think('H17_pensamento_pam', 'GUTI', 'Pamela...'));
 
-  add({ chapter: 'Parque das Águas', music: 'parque' },
+  add({ chapter: 'Parque das Águas', card: 'CAP03_parque_das_aguas', music: 'parque' },
     show('H18_parque_chegada', 1800, { place: 'PARQUE DAS ÁGUAS' }),
     say('H19_guti_pergunta_pam', 'GUTI', 'Pamela! Onde ela está??'),
     say('H20_pam_nunca_vou_entregar', 'PAM', 'EU NUNCA VOU ENTREGAR ELA PRA VOCÊ, SEU MACHISTAAA!', { shake: true }),
@@ -52,14 +52,14 @@
     say('H24_guti_abraca_amora', 'GUTI', 'Amora! Que saudade, menina!', { anim: 650 }),
     say('H25_guti_cade_min', 'GUTI', 'E a Min, cadê ela?'),
     say('H26_pam_confusa', 'PAM', 'Não sei, achei que estava com você. Ela só disse que precisava que alguém cuidasse da Amora pra ela ir correndo fazer alguma coisa...'),
-    say('H26_pam_confusa', 'PAM', 'Não entendi direito. Ela parecia tensa.'),
+    say('H26B_pam_da_de_ombros', 'PAM', 'Não entendi direito. Ela parecia tensa.'),
     think('H27_guti_pensa_correr', 'GUTI', 'Correr, é...'),
     show('H28_pensamento_belipe', 1500),
     say('H29_app_localizacao', 'GUTI', 'O aplicativo de localização... O Belipe está aqui perto!'),
     say('H30_guti_deixa_amora', 'GUTI', 'Pam, cuida da Amora pra mim? Eu já volto!'),
-    say('H30_guti_deixa_amora', 'PAM', 'Vai logo, seu machista!'));
+    say('H30B_pam_vai_logo', 'PAM', 'Vai logo, seu machista!'));
 
-  add({ chapter: 'A meia maratona', music: 'rua' },
+  add({ chapter: 'A meia maratona', card: 'CAP04_a_meia_maratona', music: 'rua' },
     show('H31_maratona_chegada', 1900, { place: 'MEIA MARATONA DE SOROCABA' }),
     say('H32_belipe_cruza_chegada', 'BELIPE', '#$%*! Que tempo horrível! #$%!', { shake: true, face: 'belipe_bravo' }),
     say('H33_guti_acusa_belipe', 'GUTI', 'Belipe! Me diz onde ela está!!'),
@@ -72,15 +72,15 @@
     say('H39_belipe_camiseta', 'BELIPE', 'Toma. Eu nem usei, ia te devolver depois no Subway.'),
     say('H40_guti_confuso_camiseta', 'GUTI', 'Uma camisa? Eu pensei que você sabia onde a Min estava...'),
     say('H41_belipe_explica', 'BELIPE', 'A Min? Ela só veio ver o começo da corrida. Parecia meio preocupada... Assim que eu comecei a correr, ela saiu falando algo sobre comprar ração para a Amora.'),
-    say('H41_belipe_explica', 'GUTI', 'Entendi... Vou ver se o Alek sabe de alguma coisa, então.'),
-    say('H41_belipe_explica', 'BELIPE', 'Acho que ele e a Va estão na Prefeitura.'),
+    say('H41B_guti_pensa_alek', 'GUTI', 'Entendi... Vou ver se o Alek sabe de alguma coisa, então.'),
+    say('H41C_belipe_aponta', 'BELIPE', 'Acho que ele e a Va estão na Prefeitura.'),
     say('H42_guti_sai_prefeitura', 'GUTI', 'Tá bem, obrigado! Depois a gente se fala!'));
 
-  add({ chapter: 'Pôr do sol na Prefeitura', music: 'prefeitura' },
+  add({ chapter: 'Pôr do sol na Prefeitura', card: 'CAP05_por_do_sol_na_prefeitura', music: 'prefeitura' },
     say('H43_alex_va_passeio', 'VALESKA', 'Esse sorvete está perfeito...', { place: 'PREFEITURA DE SOROCABA' }),
-    say('H43_alex_va_passeio', 'ALEX', 'Perfeita é você.'),
+    say('H43B_alex_galanteador', 'ALEX', 'Perfeita é você.'),
     say('H44_alex_va_patos', 'VALESKA', 'Olha os patinhos! Eu te amo, sabia?'),
-    say('H44_alex_va_patos', 'ALEX', 'Eu te amo mais, bombom.'),
+    say('H44B_va_cabeca_ombro', 'ALEX', 'Eu te amo mais, bombom.'),
     say('H45_va_vai_banheiro', 'VALESKA', 'Vou no banheiro e já volto!'),
     say('H45_va_vai_banheiro', 'ALEX', 'Tô te esperando no banco da praça.'),
     show('H46_alex_banco', 2600, { anim: 900 }),
@@ -111,14 +111,14 @@
     think('H69_guti_pensa_pv', 'GUTI', 'Tá, eles não deviam saber de nada... Só me resta uma opção...'),
     show('H70_celular_contato_pv', 1600));
 
-  add({ chapter: 'Duelo no Subway', music: 'subway' },
+  add({ chapter: 'Duelo no Subway', card: 'CAP06_duelo_no_subway', music: 'subway' },
     say('H71_guti_liga_pv', 'GUTI', 'PV? Onde você está?'),
     say('H72_pv_atende_subway', 'PV', 'Ah, estou no Subway, esperando a Ana. Sim, claro, pode vir.'),
     say('H73_guti_desliga', 'GUTI', 'Só pode ter sido ele...'),
     say('H74_pv_ana_lanchando', 'ANA', 'Esse lanche está muito bom!', { place: 'SUBWAY' }),
-    say('H74_pv_ana_lanchando', 'PV', 'O meu está melhor.'),
+    say('H74B_pv_se_gaba', 'PV', 'O meu está melhor.'),
     say('H75_lanche_doritos', 'PV', 'O segredo é colocar Doritos no meio. Sempre.'),
-    say('H75_lanche_doritos', 'ANA', 'Kkskks'),
+    say('H75B_ana_rindo', 'ANA', 'Kkskks'),
     show('H76_porta_faroeste', 2000, { sfx: 'select' }),
     say('H77_guti_na_mesa', 'GUTI', 'Aqui ou lá fora?...'),
     say('H78_pv_serio', 'PV', 'LÁ FORA!!!!', { shake: true }),
@@ -139,8 +139,9 @@
     show('H91_guti_sem_olhos', 2000),
     say('H92_guti_despede', 'GUTI', 'Valeu, PV! Desculpa, Ana!'));
 
-  add({ chapter: 'A surpresa', music: 'casa' },
-    think('H93_guti_corre_mapa', 'GUTI', 'Ela está... em casa?'),
+  add({ chapter: 'A surpresa', card: 'CAP07_a_surpresa', music: 'casa' },
+    show('H93_guti_corre_mapa', 1500),
+    think('H93B_mapa_em_casa', 'GUTI', 'Ela está... em casa?'),
     say('H94_guti_aliviado', 'GUTI', 'Ela voltou pra casa, ainda bem...'),
     show('H95_elevador', 1700),
     show('H96_porta_apartamento', 1500),
@@ -150,23 +151,25 @@
     show('H100_beijo', 2200),
     say('H101_guti_corado', 'GUTI', 'Ah, quer saber? Está tudo bem agora...'));
 
-  add({ chapter: 'O desafio de aniversário', music: 'casa' },
+  add({ chapter: 'O desafio de aniversário', card: 'CAP08_o_desafio_de_aniversario', music: 'casa' },
     say('H112_min_desafio', 'MIN', 'Mas o presente só vem depois do desafio de aniversário!'),
     show('H113_guti_vs_min', 1600, { vs: true }),
     { fight: { p2: 'min', stage: 'casa', label: 'LUTA AMISTOSA' } },
-    show('H114_pos_luta_min', 2000),
+    show('H114_pos_luta_min', 2000, { ifLost: 'H114B_min_vence' }),
     say('H115_guti_pergunta_grito', 'GUTI', 'Mas e aquele grito no telefone?'),
     say('H116_revelacao_grito', 'MIN', 'É que... a Amora pulou na mesa e derrubou o bolo inteiro.', { flashback: true }),
     say('H117_min_corre_bolo', 'MIN', 'Deixei ela com a Pam e saí correndo pra comprar outro antes de você chegar!', { flashback: true }),
     say('H118_min_envergonhada', 'MIN', 'Kjjjkkkjk... Surpresa?'),
-    say('H118_min_envergonhada', 'GUTI', 'Hahaha! Eu te amo, sabia?'));
+    say('H118B_guti_abraca_min', 'GUTI', 'Hahaha! Eu te amo, sabia?'));
 
-  add({ chapter: 'Créditos', music: 'ending' }, { credits: true }, show('H111_fim', 5000, { end: true }));
+  add({ chapter: 'Créditos', card: 'CAP09_creditos', music: 'ending' }, { credits: true }, show('H111_fim', 5000, { end: true }));
 
   // frames dos créditos e a lista de cargos (só aparecem dois nomes, alternados)
   const CREDIT_FRAMES = ['H102_creditos_bolo', 'H103_creditos_selfie', 'H104_creditos_amora', 'H105_creditos_pv_belipe', 'H106_creditos_pam_kpop', 'H107_creditos_alex_va', 'H108_creditos_guti_camiseta', 'H109_creditos_final'];
   const ROLES = ['Direção', 'Roteiro', 'Programação', 'Direção de Arte', 'Pixel Art', 'Design de Personagens', 'Animação', 'Cenários', 'Diálogos', 'Trilha Sonora', 'Efeitos Sonoros', 'Lutas e Golpes', 'Inteligência da CPU', 'Controle no Celular', 'Testes', 'Produção Executiva', 'Bufê do Café da Tarde das Cores', 'Coordenação de Fofocas', 'Cuidados com a Amora', 'Agradecimentos Especiais'];
   const NAMES = ['Paulo Vitor Lemes', 'Claude'];
+  // fundos da tela de derrota e do menu do modo
+  const SCREENS = { retry: 'R01_guti_derrotado', menu: 'M01_menu_historia' };
 
   const COLORS = { GUTI: '#ff6a5a', MIN: '#6aa8ff', PAM: '#c38cff', BELIPE: '#ff9a3a', ALEX: '#9a9aa6', VALESKA: '#e05a6a', PV: '#7ad07a', ANA: '#3ad0b0', AMORA: '#e8b060', TODOS: '#ffd400' };
   const CHAPTERS = S.map((s, i) => s.chapter ? i : -1).filter(i => i >= 0);
@@ -203,7 +206,7 @@
   }
   Object.values(FACES).concat(['belipe_bravo']).forEach(id => face({ face: id }));
   function preload(from) {
-    for (let i = from; i < Math.min(S.length, from + 6); i++) if (S[i].f) files(S[i].f).forEach(img);
+    for (let i = from; i < Math.min(S.length, from + 6); i++) [S[i].f, S[i].ifLost, S[i].card].forEach(f => f && files(f).forEach(img));
     if (S[from] && S[from].credits) CREDIT_FRAMES.forEach(f => files(f).forEach(img));
   }
 
@@ -216,8 +219,11 @@
     set(v) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(Object.assign(save.get(), v))); } catch (e) { /* sem armazenamento */ } }
   };
   const step = () => S[st.i] || {};
+  // frame do passo (alguns mudam conforme quem venceu a última luta)
+  const frameOf = s => (s.ifLost && st.lastWinner === 1 ? s.ifLost : s.f);
 
   function begin(fromIdx) {
+    files(SCREENS.retry).forEach(img);
     st.i = fromIdx || 0; st.t = 0; st.chars = 0; st.retry = false; st.menu = null; st.prevF = null;
     enterStep();
     Game.go('story');
@@ -232,13 +238,13 @@
   }
   function next() {
     const cur = step();
-    st.prevF = cur.f || st.prevF;
+    st.prevF = frameOf(cur) || st.prevF;
     st.i++;
     if (st.i >= S.length) { save.set({ done: true, chapter: 0 }); hide(); Game.go('title'); return; }
     const s = step();
     if (s.chapter) { st.chapterT = 0; }
     enterStep();
-    if (s.f && s.f !== st.prevF) st.fadeT = 14;
+    if (s.f && frameOf(s) !== st.prevF) st.fadeT = 14;
     if (s.fight) startFight(s.fight);
   }
   function startFight(fd) {
@@ -275,6 +281,7 @@
     // fim da luta
     onMatchEnd(winner) {
       const fd = Story.current();
+      st.lastWinner = winner;
       Sound.stopMusic && Sound.stopMusic();
       if (fd.mustWin && winner !== 0) { st.retry = true; st.menu = { i: 0 }; Game.go('story'); Sound.playMusic('gameover'); return; }
       Game.go('story');
@@ -359,16 +366,27 @@
     cx.fillStyle = '#fff'; cx.fillText(txt, 34, 106);
     cx.globalAlpha = 1;
   }
-  function drawChapter(name, t) {
-    const a = Math.min(1, t / 15, Math.max(0, (110 - t) / 20));
+  const CHAPTER_T = 180; // 3 s por cartão
+  function drawChapter(s, t) {
+    const name = s.chapter, a = Math.min(1, t / 15, Math.max(0, (CHAPTER_T - 10 - t) / 20));
     cx.fillStyle = '#000'; cx.fillRect(0, 0, CW, CH);
+    const im = s.card && frameImage(s.card);
+    if (im) { // arte do lugar, com um zoom lento
+      const z = 1 + t / CHAPTER_T * 0.05;
+      cx.globalAlpha = a; cx.save(); cx.translate(CW / 2, CH / 2); cx.scale(z, z);
+      cx.drawImage(im, -CW / 2, -CH / 2, CW, CH); cx.restore();
+      const g = cx.createLinearGradient(0, CH / 2 - 130, 0, CH / 2 + 110);
+      g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.3, 'rgba(0,0,0,.55)'); g.addColorStop(0.7, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      cx.fillStyle = g; cx.fillRect(0, CH / 2 - 130, CW, 240);
+    }
     cx.globalAlpha = a; cx.textAlign = 'center';
-    cx.fillStyle = '#8a80a8'; cx.font = 'bold 28px "Trebuchet MS", Arial, sans-serif';
+    cx.shadowColor = '#000'; cx.shadowBlur = 12;
+    cx.fillStyle = im ? '#e8e0ff' : '#8a80a8'; cx.font = 'bold 28px "Trebuchet MS", Arial, sans-serif';
     const n = CHAPTERS.indexOf(st.i) + 1;
     cx.fillText(name === 'Créditos' ? '' : 'CAPÍTULO ' + n, CW / 2, CH / 2 - 40);
     cx.fillStyle = '#ffd400'; cx.font = 'bold 60px "Trebuchet MS", Arial, sans-serif';
     cx.fillText(name.toUpperCase(), CW / 2, CH / 2 + 30);
-    cx.textAlign = 'left'; cx.globalAlpha = 1;
+    cx.shadowBlur = 0; cx.textAlign = 'left'; cx.globalAlpha = 1;
   }
 
   // ---------- créditos ----------
@@ -405,15 +423,16 @@
     if (Game.anyStart() || Input.key('Escape')) { st.menu = st.menu ? null : { i: 0 }; Sound.play('select'); }
     if (st.menu) return pauseMenu();
 
-    if (s.chapter) { drawChapter(s.chapter, st.t); if (st.t > 120 || (adv && st.t > 20)) next(); return; }
+    if (s.chapter) { drawChapter(s, st.t); if (st.t > CHAPTER_T || (adv && st.t > 20)) next(); return; }
     if (s.credits) { if (credits(st.t)) next(); return; }
     if (s.fight) return; // a luta está rodando em outra cena
 
     // imagem (com transição e tremida)
     cx.save();
     if (s.shake && st.t < 18) cx.translate((Math.random() - 0.5) * 22, (Math.random() - 0.5) * 22);
-    drawFrame(s.f, s, st.t, 1);
-    if (st.fadeT > 0 && st.prevF && st.prevF !== s.f) { drawFrame(st.prevF, null, 0, st.fadeT / 14); st.fadeT--; }
+    const f = frameOf(s);
+    drawFrame(f, s, st.t, 1);
+    if (st.fadeT > 0 && st.prevF && st.prevF !== f) { drawFrame(st.prevF, null, 0, st.fadeT / 14); st.fadeT--; }
     cx.restore();
     if (s.flashback) { cx.fillStyle = 'rgba(255,240,210,.16)'; cx.fillRect(0, 0, CW, CH); const v = cx.createRadialGradient(CW / 2, CH / 2, CH * 0.35, CW / 2, CH / 2, CH * 0.85); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(60,40,20,.55)'); cx.fillStyle = v; cx.fillRect(0, 0, CW, CH); }
     if (s.place) drawPlace(s.place, st.t);
@@ -427,23 +446,26 @@
     if (st.i < 8) cx.font = '18px "Trebuchet MS", Arial, sans-serif'; cx.fillStyle = 'rgba(255,255,255,.45)'; cx.textAlign = 'right';
     if (st.i < 8) cx.fillText('SOCO / CLIQUE: avançar    START / ESC: menu', CW - 24, 30); cx.textAlign = 'left';
   };
-  function overlayPanel(title, items, P, sub) {
-    cx.fillStyle = 'rgba(0,0,0,.72)'; cx.fillRect(0, 0, CW, CH);
-    cx.textAlign = 'center'; cx.fillStyle = '#ffd400'; cx.font = 'bold 54px "Trebuchet MS", Arial, sans-serif'; cx.fillText(title, CW / 2, 220);
-    if (sub) { cx.fillStyle = '#cfc8e8'; cx.font = '26px "Trebuchet MS", Arial, sans-serif'; cx.fillText(sub, CW / 2, 270); }
+  function overlayPanel(title, items, P, sub, o) {
+    o = o || {};
+    const y0 = o.y || 220, dim = o.dim === undefined ? 0.72 : o.dim;
+    cx.fillStyle = 'rgba(0,0,0,' + dim + ')'; cx.fillRect(0, 0, CW, CH);
+    cx.textAlign = 'center'; cx.shadowColor = '#000'; cx.shadowBlur = o.dim !== undefined ? 10 : 0;
+    cx.fillStyle = '#ffd400'; cx.font = 'bold 54px "Trebuchet MS", Arial, sans-serif'; cx.fillText(title, CW / 2, y0);
+    if (sub) { cx.fillStyle = '#cfc8e8'; cx.font = '26px "Trebuchet MS", Arial, sans-serif'; cx.fillText(sub, CW / 2, y0 + 50); }
     if (Game.navDown()) { P.i = (P.i + 1) % items.length; Sound.play('move'); }
     if (Game.navUp()) { P.i = (P.i + items.length - 1) % items.length; Sound.play('move'); }
     items.forEach((it, i) => {
       cx.fillStyle = i === P.i ? '#ffd400' : '#ffffff'; cx.font = 'bold 34px "Trebuchet MS", Arial, sans-serif';
-      cx.fillText((i === P.i ? '> ' : '') + it.label + (i === P.i ? ' <' : ''), CW / 2, 360 + i * 56);
+      cx.fillText((i === P.i ? '> ' : '') + it.label + (i === P.i ? ' <' : ''), CW / 2, y0 + 140 + i * 56);
     });
-    cx.textAlign = 'left';
+    cx.shadowBlur = 0; cx.textAlign = 'left';
     if (P.t === undefined) P.t = 0;
     if (++P.t > 6 && advKey()) { clicked = false; Sound.play('confirm'); items[P.i].act(); }
   }
   function pauseMenu() {
     const s = step();
-    if (s.f) drawFrame(s.f, s, st.t, 1); else { cx.fillStyle = '#000'; cx.fillRect(0, 0, CW, CH); }
+    if (s.f || s.card) drawFrame(frameOf(s) || s.card, s, st.t, 1); else { cx.fillStyle = '#000'; cx.fillRect(0, 0, CW, CH); }
     overlayPanel('HISTÓRIA', [
       { label: 'CONTINUAR', act: () => { st.menu = null; } },
       { label: 'PULAR CENA', act: () => { st.menu = null; skipToNextFight(); } },
@@ -451,12 +473,12 @@
     ], st.menu);
   }
   function retryScreen() {
-    cx.fillStyle = '#000'; cx.fillRect(0, 0, CW, CH);
+    if (files(SCREENS.retry).length) drawFrame(SCREENS.retry, null, 0, 1); else { cx.fillStyle = '#000'; cx.fillRect(0, 0, CW, CH); }
     if (!st.menu) st.menu = { i: 0 };
     overlayPanel('O GUTI PERDEU...', [
       { label: 'TENTAR DE NOVO', act: () => { st.retry = false; st.menu = null; startFight(step().fight); } },
       { label: 'SAIR PARA O MENU', act: () => { st.retry = false; st.menu = null; hide(); Game.go('title'); } }
-    ], st.menu, 'A Min ainda está desaparecida!');
+    ], st.menu, 'A Min ainda está desaparecida!', files(SCREENS.retry).length ? { y: 440, dim: 0.15 } : null);
   }
   function skipToNextFight() {
     if (step().credits) { next(); return; }
@@ -480,7 +502,7 @@
       { label: 'ADVERSARIOS: ' + (st.twoPlayer ? 'JOGADOR 2' : 'CPU'), act: () => { st.twoPlayer = !st.twoPlayer; }, change: () => { st.twoPlayer = !st.twoPlayer; } },
       { label: 'VOLTAR', act: () => Game.go('title') }
     ];
-    Game.storyMenu(items);
+    Game.storyMenu(items, frameImage(SCREENS.menu));
   };
   Story.hide = hide;
   Story.steps = S;

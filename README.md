@@ -30,6 +30,7 @@ O Guti volta da China, ouve um grito da Min no celular e sai procurando por ela 
 - O **P1 é sempre o Guti**. O **P2** joga com quem aparece na história (ou deixe com a CPU no menu do modo).
 - Nas cenas: **soco/Enter/clique** avança o texto, **START/ESC** abre o menu (pular cena ou sair).
 - Algumas lutas só seguem se o Guti ganhar; se perder, dá para tentar de novo. O progresso fica salvo por capítulo.
+- Cada capítulo abre com um cartão ilustrado. A cena depois da luta com a Min muda conforme quem venceu.
 - As ilustrações ficam em `assets/story/` e a lista em `js/storymeta.js`. Para adicionar ou trocar imagens: `python3 tools/importar_historia.py <pasta>`.
 
 ## Celular como controle
