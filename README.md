@@ -10,8 +10,8 @@ Roda direto no navegador, sem instalar nada: é só abrir o `index.html`.
 | Mover / pular / agachar | W A S D | setas | direcional ou analógico |
 | Soco | V | 1 | A |
 | Chute | B | 2 | B |
-| Poder | N | 3 | X ou Y |
-| Super (barra cheia) | V + N | 1 + 3 | RB |
+| Poder | N | 3 | X ou LB |
+| Super (barra cheia) | V + N | 1 + 3 | Y ou RB |
 | Pausa | ESC / ENTER | ESC / ENTER | START |
 
 - **Poder** = especial 1 · **Frente + Poder** = especial 2 · **Baixo + Poder** = especial 3
@@ -33,6 +33,16 @@ O Guti volta da China, ouve um grito da Min no celular e sai procurando por ela 
 - Cada capítulo abre com um cartão ilustrado. A cena depois da luta com a Min muda conforme quem venceu.
 - As ilustrações ficam em `assets/story/` e a lista em `js/storymeta.js`. Para adicionar ou trocar imagens: `python3 tools/importar_historia.py <pasta>`.
 
+## Controle Bluetooth (ou USB)
+
+Controles de Xbox, PlayStation, Switch Pro, 8BitDo e outros funcionam direto no navegador (Chrome ou Edge recomendados):
+
+1. Pareie o controle com o notebook nas configurações de Bluetooth do sistema (Xbox: segure o botão de parear · PS4/PS5: segure Share/Create + PS · Switch Pro: segure o botão Sync).
+2. Com o jogo aberto, aperte qualquer botão do controle. O primeiro controle vira o **P1** e o segundo vira o **P2**.
+3. Em **Controle Bluetooth**, no menu principal, dá para testar os botões e trocar P1 e P2 (Poder + Super juntos, ou `T`).
+
+Botões: **A** soco, **B** chute, **X/LB/LT** poder, **Y/RB/RT** super, **START** pausa e **SELECT** volta nos menus. O controle vibra quando o seu personagem apanha (se o controle e o navegador tiverem suporte). Teclado, controle e celular funcionam juntos.
+
 ## Celular como controle
 
 Dá para jogar com o celular no lugar do teclado (o teclado e o controle continuam funcionando juntos):
@@ -46,7 +56,6 @@ O controle é inspirado no do Super Nintendo: direcional, **Y** soco, **B** chut
 Ele vibra quando o seu personagem apanha (no Android) e mostra quem você escolheu.
 
 - Funciona melhor com todo mundo na mesma Wi-Fi. A conexão vai direto do celular para o notebook (WebRTC); o servidor público do PeerJS só apresenta um aparelho ao outro.
-- Ao conectar, o celular oferece **tela cheia** (sem a barra do navegador). No iPhone, o Safari não permite tela cheia em sites: o aviso ensina a usar *Compartilhar → Adicionar à Tela de Início*, e aberto pelo ícone o controle fica sem barra. O código da sala fica salvo no notebook, então o ícone continua valendo nas próximas vezes. Há também um botão de tela cheia no canto do controle.
 - Se a página do notebook recarregar, os celulares reconectam sozinhos no mesmo lugar (P1/P2).
 - Se um celular cair no meio da luta, o jogo pausa.
 - Para jogar no próprio celular, use `index.html?jogo=1`.

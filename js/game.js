@@ -154,15 +154,53 @@
     T('CHUTE OU ESC VOLTA', W / 2, 202, '#6a6088', { align: 'center' });
     if (backKey() || (G.t > 10 && confirmKey())) { Sound.play('select'); go('title'); }
   }
+  const localToasts = [];
+  const toastList = () => (RM() ? RM().toasts : localToasts);
   function drawToasts() {
-    const r = RM(); if (!r || !r.toasts.length) return;
-    r.toasts.forEach((t, i) => {
+    Input.padEvents().forEach(e => {
+      const list = toastList();
+      list.push({ s: 'P' + (e.p + 1) + ': ' + (e.on ? 'CONTROLE CONECTADO' : 'CONTROLE DESCONECTOU'), col: e.on ? (e.p ? '#8ab8ff' : '#ff8a8a') : '#ffb04a', t: 0 });
+      if (list.length > 3) list.shift();
+      if (e.on) Input.vibratePad(e.p, 120);
+    });
+    const list = toastList(); if (!list.length) return;
+    list.forEach((t, i) => {
       t.t++;
       const y = G.scene === 'fight' ? 46 + i * 12 : H - 16 - i * 12, w = Font.width(t.s) + 10;
       R(W / 2 - w / 2, y - 2, w, 11, 'rgba(0,0,0,0.75)');
       T(t.s, W / 2, y, t.col, { align: 'center' });
     });
-    r.toasts = r.toasts.filter(t => t.t < 150);
+    const keep = list.filter(t => t.t < 150); list.length = 0; list.push(...keep);
+  }
+
+  // ---------- controle Bluetooth / USB ----------
+  function padBox(p, x, y) {
+    const sl = Input.padSlot(p), col = p ? '#6aa8ff' : '#ff6a6a';
+    panel(x, y, 122, 52);
+    T('JOGADOR ' + (p + 1), x + 6, y + 5, col);
+    if (!sl) { if ((G.t >> 4) % 2) T('APERTE UM BOTAO', x + 6, y + 20, '#cfc8e8'); T('DO CONTROLE', x + 6, y + 30, '#7a7090'); return; }
+    T(('CONTROLE ' + sl.name).slice(0, 19), x + 6, y + 15, '#9ff0ff');
+    // teste ao vivo: direcional e botões
+    const on = b => Input.held(p, b), dot = (dx, dy, b, lbl) => { R(x + dx, y + dy, 9, 9, on(b) ? '#ffd400' : '#3a3050'); T(lbl, x + dx + 2, y + dy + 1, on(b) ? '#140a24' : '#8a80a8'); };
+    [['up', 13, 26], ['down', 13, 40], ['left', 6, 33], ['right', 20, 33]].forEach(([b, dx, dy]) => R(x + dx, y + dy, 6, 6, on(b) ? '#ffd400' : '#3a3050'));
+    dot(46, 33, 'punch', 'A'); dot(57, 33, 'kick', 'B'); dot(68, 33, 'power', 'X'); dot(79, 33, 'super', 'Y');
+    R(x + 94, y + 35, 20, 6, on('start') ? '#ffd400' : '#3a3050');
+  }
+  function pads() {
+    starBg('#0a1424', '#2a3a6a');
+    T('CONTROLE BLUETOOTH', W / 2, 8, '#ffd400', { scale: 2, align: 'center', outline: '#000' });
+    const lines = ['1. LIGUE O BLUETOOTH DO NOTEBOOK', '2. DEIXE O CONTROLE EM MODO DE PAREAR:', '   XBOX: SEGURE O BOTAO DE PAREAR', '   PS4/PS5: SEGURE SHARE/CREATE + PS', '   SWITCH PRO: SEGURE O BOTAO SYNC', '3. PAREIE NAS CONFIGURACOES DO SISTEMA', '4. APERTE UM BOTAO DO CONTROLE AQUI', '', 'O PRIMEIRO CONTROLE E O P1,', 'O SEGUNDO E O P2. CABO USB TAMBEM VALE.', 'TECLADO E CELULAR CONTINUAM FUNCIONANDO.'];
+    lines.forEach((l, i) => T(l, 10, 34 + i * 10, i < 7 ? (l[0] === ' ' ? '#cfc8e8' : '#ffffff') : '#9ff0ff', { shadow: '#000' }));
+    padBox(0, 252, 32); padBox(1, 252, 90);
+    T('A SOCO  B CHUTE  X/LB PODER  Y/RB SUPER  START PAUSA', W / 2, 152, '#ffd400', { align: 'center', shadow: '#000' });
+    const both = Input.padSlot(0) && Input.padSlot(1);
+    if (both) T('PODER + SUPER JUNTOS (OU T): TROCAR P1 E P2', W / 2, 166, '#9ff0ff', { align: 'center', shadow: '#000' });
+    if (!navigator.getGamepads) T('ESTE NAVEGADOR NAO LE CONTROLES. USE O CHROME OU O EDGE.', W / 2, 180, '#ff8a8a', { align: 'center' });
+    T('START OU ESC VOLTA', W / 2, 202, '#6a6088', { align: 'center' });
+    if (both && G.t > 10 && (Input.key('KeyT') || [0, 1].some(p => (Input.menuPressed(p, 'power') && Input.held(p, 'super')) || (Input.menuPressed(p, 'super') && Input.held(p, 'power'))))) {
+      Input.swapPads(); Sound.play('confirm');
+    }
+    if (G.t > 10 && (Input.key('Escape') || Input.key('Backspace') || anyStart())) { Sound.play('select'); go('title'); }
   }
 
   // seta de direção em pixel (para o histórico de comandos)
@@ -229,7 +267,7 @@
     CH.forEach((ch, i) => drawCharAt(ch, 30 + i * 46, 214, Poses.idle(ch, G.t + i * 40), 1, 'title' + ch.id, i >= 4, { kind: 'idle' }));
     logo(W / 2, 4, 3);
     T('O JOGO DE LUTA DOS FIFIS', W / 2, 54, '#9ff0ff', { align: 'center', shadow: '#000' });
-    panel(W / 2 - 84, 64, 168, 98);
+    panel(W / 2 - 84, 64, 168, 102);
     runMenu([
       { label: 'MODO HISTORIA', act: () => go('storymenu') },
       { label: 'ARCADE', act: () => startSelect('arcade') },
@@ -239,13 +277,15 @@
       { label: 'LISTA DE GOLPES', act: () => { G.moveTab = 0; go('moves'); } },
       { label: 'COMO JOGAR', act: () => go('howto') },
       { label: 'CONTROLE NO CELULAR', act: () => go('phone') },
+      { label: 'CONTROLE BLUETOOTH', act: () => go('pads') },
       { label: 'OPCOES', act: () => go('options') },
       { label: 'CREDITOS', act: () => go('credits') }
-    ], G.menu, W / 2, 68, { w: 150, lh: 9.4 });
+    ], G.menu, W / 2, 68, { w: 150, lh: 8.9 });
     T('M: SOM  F: TELA CHEIA', W - 4, 4, '#6a5a9a', { align: 'right' });
-    if (Input.pads()) T('CONTROLE CONECTADO: ' + Input.pads(), 4, 4, '#7ad07a');
-    if (RM() && (RM().connected(0) || RM().connected(1))) slotDots(4, Input.pads() ? 14 : 4, 'left');
-    if (G.save.arcadeHigh) T('RECORDE ARCADE ' + G.save.arcadeHigh, W / 2, 166, '#ffd400', { align: 'center', shadow: '#000' });
+    const padP = [0, 1].filter(p => Input.padSlot(p));
+    if (padP.length) T('CONTROLE: ' + padP.map(p => 'P' + (p + 1)).join(' '), 4, 4, '#7ad07a');
+    if (RM() && (RM().connected(0) || RM().connected(1))) slotDots(4, padP.length ? 14 : 4, 'left');
+    if (G.save.arcadeHigh) T('RECORDE ARCADE ' + G.save.arcadeHigh, W / 2, 170, '#ffd400', { align: 'center', shadow: '#000' });
   }
 
   // ---------- OPÇÕES ----------
@@ -268,8 +308,8 @@
       ['MOVER', 'W A S D', 'SETAS', 'DIRECIONAL'],
       ['SOCO', 'V', '1', 'A'],
       ['CHUTE', 'B', '2', 'B'],
-      ['PODER', 'N', '3', 'X / Y'],
-      ['SUPER', 'V + N', '1 + 3', 'RB'],
+      ['PODER', 'N', '3', 'X / LB'],
+      ['SUPER', 'V + N', '1 + 3', 'Y / RB'],
       ['PAUSA', 'ESC / ENTER', 'ESC / ENTER', 'START']
     ];
     L.forEach((r, i) => {
@@ -325,7 +365,7 @@
     T('FRENTE FRENTE: DASH   TRAS TRAS: RECUO', 128, y, '#c8c0dc'); y += 8;
     T('BAIXO + CHUTE: RASTEIRA   TRAS: DEFESA', 128, y, '#c8c0dc');
     R(0, 203, W, 13, '#120a24');
-    T('P1: V SOCO B CHUTE N PODER   P2: 1 2 3   CONTROLE: A B X', W / 2, 206, '#8a80a8', { align: 'center' });
+    T('P1: V SOCO B CHUTE N PODER   P2: 1 2 3   CONTROLE: A B X Y', W / 2, 206, '#8a80a8', { align: 'center' });
   }
   function moves() {
     const ch = CH[G.moveTab || 0];
@@ -1073,7 +1113,7 @@
   }
 
   // ---------- Laço principal ----------
-  const SCENES = { story: () => { R(0, 0, W, H, '#000'); Story.scene(); }, storymenu: () => Story.menuScene(), phone, title, options, howto, moves, credits, select, stage: stageSel, ladder, continue: arcadeContinue, gameover, ending, vs, fight, result };
+  const SCENES = { story: () => { R(0, 0, W, H, '#000'); Story.scene(); }, storymenu: () => Story.menuScene(), phone, pads, title, options, howto, moves, credits, select, stage: stageSel, ladder, continue: arcadeContinue, gameover, ending, vs, fight, result };
   let last = performance.now(), acc = 0;
   const STEP = 1000 / 60;
   let started = false;
