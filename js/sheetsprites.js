@@ -1,12 +1,13 @@
 // Sprites dos personagens a partir das folhas de animação.
 // v2: assets/sprites2/<id>_<quadro>.png (parado, andando, golpes, reações, especiais e vitória)
 // v1: assets/sprites/<id>_<pose>.png (model sheets antigos, só para personagens sem as folhas v2)
-// Também carrega os efeitos de assets/fx/ (projéteis, faíscas, ajudantes).
+// Também carrega os efeitos (projéteis, faíscas, ajudantes): uma folha só, assets/fx/atlas.png, recortada pelo js/fxmeta.js.
 (function () {
   const META = window.SHEET_META || {};
   const META2 = window.SHEET_META2 || {};
   const FXM = window.FX_META || {};
-  const imgs = {}, imgs2 = {}, fx = {};
+  const imgs = {}, imgs2 = {};
+  let atlas = null;
   const FRAMES = ['front', 'stance', 'side', 'back', 'action'];
   const ok = im => !!im && im.complete && im.naturalWidth > 0;
 
@@ -22,7 +23,7 @@
         Object.keys(M).forEach(n => { if (n[0] === '_') return; const im = new Image(); im.src = 'assets/sprites2/' + ch.id + '_' + n + '.png'; imgs2[ch.id][n] = im; });
       }
     });
-    Object.keys(FXM).forEach(n => { if (fx[n]) return; const im = new Image(); im.src = 'assets/fx/' + n + '.png'; fx[n] = im; });
+    if (!atlas) { atlas = new Image(); atlas.src = 'assets/fx/atlas.png'; }
     // variações (ex.: belipe_bravo) também são carregadas
     list.forEach(ch => Object.keys(META2).forEach(id => { if (id.startsWith(ch.id + '_') && !imgs2[id]) load([variant(ch, id.slice(ch.id.length + 1))]); }));
   }
@@ -235,32 +236,32 @@
 
   // ---------- efeitos ----------
   // o: { flip, scale, sx, sy, alpha, rot, ax, ay } — ax/ay de 0 a 1 (0.5 = centro)
-  function fxReady(n) { return ok(fx[n]); }
+  function fxReady(n) { return !!FXM[n] && ok(atlas); }
   function drawFX(ctx, n, x, y, o) {
-    const im = fx[n]; if (!ok(im)) return false;
+    const m = FXM[n]; if (!m || !ok(atlas)) return false;
     o = o || {};
     const sx = (o.sx || o.scale || 1), sy = (o.sy || o.scale || 1);
-    const w = im.width, h = im.height, ax = o.ax === undefined ? 0.5 : o.ax, ay = o.ay === undefined ? 0.5 : o.ay;
+    const w = m.w, h = m.h, ax = o.ax === undefined ? 0.5 : o.ax, ay = o.ay === undefined ? 0.5 : o.ay;
     ctx.save();
     ctx.translate(Math.round(x), Math.round(y));
     if (o.rot) ctx.rotate(o.rot);
     if (o.flip) ctx.scale(-1, 1);
     if (o.alpha !== undefined) ctx.globalAlpha *= Math.max(0, Math.min(1, o.alpha));
-    ctx.drawImage(im, Math.round(-w * ax * sx), Math.round(-h * ay * sy), Math.round(w * sx), Math.round(h * sy));
+    ctx.drawImage(atlas, m.x, m.y, w, h, Math.round(-w * ax * sx), Math.round(-h * ay * sy), Math.round(w * sx), Math.round(h * sy));
     ctx.restore();
     return true;
   }
   // feixe: corpo esticado a partir de uma fatia do sprite + esfera na ponta (ou na origem)
   const BEAMS = { beamPurple: { body: [30, 52], orb: [0, 27], orbAt: 'start' }, beamWhite: { body: [30, 52], orb: [0, 27], orbAt: 'start' }, beamGold: { body: [6, 30], orb: [33, 60], orbAt: 'end' } };
   function drawBeam(ctx, n, x0, y, len, f, t, sy) {
-    const im = fx[n], B = BEAMS[n]; if (!ok(im) || !B) return false;
+    const m = FXM[n], B = BEAMS[n]; if (!m || !B || !ok(atlas)) return false;
     sy = sy || 1;
-    const h = im.height, hh = Math.round(h * sy), top = Math.round(y - hh / 2);
+    const h = m.h, hh = Math.round(h * sy), top = Math.round(y - hh / 2);
     const wob = (t >> 1) % 2;
     ctx.save(); ctx.translate(Math.round(x0), 0); if (f < 0) ctx.scale(-1, 1);
-    ctx.drawImage(im, B.body[0], 0, B.body[1] - B.body[0], h, 0, top - wob, Math.round(len), hh + wob * 2);
+    ctx.drawImage(atlas, m.x + B.body[0], m.y, B.body[1] - B.body[0], h, 0, top - wob, Math.round(len), hh + wob * 2);
     const ow = B.orb[1] - B.orb[0], ox = B.orbAt === 'end' ? Math.round(len) - Math.round(ow * sy * 0.6) : -Math.round(ow * sy * 0.4);
-    ctx.drawImage(im, B.orb[0], 0, ow, h, ox, top, Math.round(ow * sy), hh);
+    ctx.drawImage(atlas, m.x + B.orb[0], m.y, ow, h, ox, top, Math.round(ow * sy), hh);
     ctx.restore();
     return true;
   }

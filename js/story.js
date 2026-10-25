@@ -15,7 +15,7 @@
   const think = (f, who, t, o) => Object.assign({ f, who, t, think: true }, o || {});
   const show = (f, ms, o) => Object.assign({ f, auto: ms || 1600 }, o || {});
 
-  add({ chapter: 'A volta da China', card: 'CAP01_a_volta_da_china', music: 'select' },
+  add({ chapter: 'A volta da China', card: 'CAP01_a_volta_da_china', music: 'hist_estrada' },
     show('H110_capa_modo_historia', 2600, { title: true }),
     say('H01_carro_guti_celular', 'GUTI', 'Oi, amor! Já estou na estrada. Logo, logo eu chego aí.', { anim: 260 }),
     say('H01_carro_guti_celular', 'MIN', 'Aaah, finalmente! Estou morrendo de saudade!', { phone: true }),
@@ -41,7 +41,7 @@
     show('H16_guti_olhos_cerrados', 1400),
     think('H17_pensamento_pam', 'GUTI', 'Pamela...'));
 
-  add({ chapter: 'Parque das Águas', card: 'CAP03_parque_das_aguas', music: 'parque' },
+  add({ chapter: 'Parque das Águas', card: 'CAP03_parque_das_aguas', music: 'hist_parque' },
     show('H18_parque_chegada', 1800, { place: 'PARQUE DAS ÁGUAS' }),
     say('H19_guti_pergunta_pam', 'GUTI', 'Pamela! Onde ela está??'),
     say('H20_pam_nunca_vou_entregar', 'PAM', 'EU NUNCA VOU ENTREGAR ELA PRA VOCÊ, SEU MACHISTAAA!', { shake: true }),
@@ -59,7 +59,7 @@
     say('H30_guti_deixa_amora', 'GUTI', 'Pam, cuida da Amora pra mim? Eu já volto!'),
     say('H30B_pam_vai_logo', 'PAM', 'Vai logo, seu machista!'));
 
-  add({ chapter: 'A meia maratona', card: 'CAP04_a_meia_maratona', music: 'rua' },
+  add({ chapter: 'A meia maratona', card: 'CAP04_a_meia_maratona', music: 'hist_maratona' },
     show('H31_maratona_chegada', 1900, { place: 'MEIA MARATONA DE SOROCABA' }),
     say('H32_belipe_cruza_chegada', 'BELIPE', '#$%*! Que tempo horrível! #$%!', { shake: true, face: 'belipe_bravo' }),
     say('H33_guti_acusa_belipe', 'GUTI', 'Belipe! Me diz onde ela está!!'),
@@ -76,7 +76,7 @@
     say('H41C_belipe_aponta', 'BELIPE', 'Acho que ele e a Va estão na Prefeitura.'),
     say('H42_guti_sai_prefeitura', 'GUTI', 'Tá bem, obrigado! Depois a gente se fala!'));
 
-  add({ chapter: 'Pôr do sol na Prefeitura', card: 'CAP05_por_do_sol_na_prefeitura', music: 'prefeitura' },
+  add({ chapter: 'Pôr do sol na Prefeitura', card: 'CAP05_por_do_sol_na_prefeitura', music: 'hist_romance' },
     say('H43_alex_va_passeio', 'VALESKA', 'Esse sorvete está perfeito...', { place: 'PREFEITURA DE SOROCABA' }),
     say('H43B_alex_galanteador', 'ALEX', 'Perfeita é você.'),
     say('H44_alex_va_patos', 'VALESKA', 'Olha os patinhos! Eu te amo, sabia?'),
@@ -111,7 +111,7 @@
     think('H69_guti_pensa_pv', 'GUTI', 'Tá, eles não deviam saber de nada... Só me resta uma opção...'),
     show('H70_celular_contato_pv', 1600));
 
-  add({ chapter: 'Duelo no Subway', card: 'CAP06_duelo_no_subway', music: 'subway' },
+  add({ chapter: 'Duelo no Subway', card: 'CAP06_duelo_no_subway', music: 'hist_subway' },
     say('H71_guti_liga_pv', 'GUTI', 'PV? Onde você está?'),
     say('H72_pv_atende_subway', 'PV', 'Ah, estou no Subway, esperando a Ana. Sim, claro, pode vir.'),
     say('H73_guti_desliga', 'GUTI', 'Só pode ter sido ele...'),
@@ -139,7 +139,7 @@
     show('H91_guti_sem_olhos', 2000),
     say('H92_guti_despede', 'GUTI', 'Valeu, PV! Desculpa, Ana!'));
 
-  add({ chapter: 'A surpresa', card: 'CAP07_a_surpresa', music: 'casa' },
+  add({ chapter: 'A surpresa', card: 'CAP07_a_surpresa', music: 'hist_festa' },
     show('H93_guti_corre_mapa', 1500),
     think('H93B_mapa_em_casa', 'GUTI', 'Ela está... em casa?'),
     say('H94_guti_aliviado', 'GUTI', 'Ela voltou pra casa, ainda bem...'),
@@ -151,7 +151,7 @@
     show('H100_beijo', 2200),
     say('H101_guti_corado', 'GUTI', 'Ah, quer saber? Está tudo bem agora...'));
 
-  add({ chapter: 'O desafio de aniversário', card: 'CAP08_o_desafio_de_aniversario', music: 'casa' },
+  add({ chapter: 'O desafio de aniversário', card: 'CAP08_o_desafio_de_aniversario', music: 'hist_festa' },
     say('H112_min_desafio', 'MIN', 'Mas o presente só vem depois do desafio de aniversário!'),
     show('H113_guti_vs_min', 1600, { vs: true }),
     { fight: { p2: 'min', stage: 'casa', label: 'LUTA AMISTOSA' } },

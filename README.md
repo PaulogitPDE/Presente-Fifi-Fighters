@@ -23,6 +23,21 @@ Roda direto no navegador, sem instalar nada: é só abrir o `index.html`.
 - **Contra-golpe:** acertar o oponente na preparação de um golpe dá 25% a mais de dano.
 - `M` liga/desliga o som · `F` tela cheia · a luta pausa sozinha se você trocar de aba.
 
+## Trilha sonora
+
+O jogo toca músicas de AC/DC, CPM 22 e Charlie Brown Jr., sempre sorteadas (a banda e depois a música, sem repetir até tocar todas) de acordo com o momento:
+
+| Momento | Bandas |
+|---|---|
+| Menus | Charlie Brown Jr. e CPM 22 |
+| Escolha de lutador e escada do Arcade | AC/DC |
+| Lutas (cada luta sorteia outra música) | AC/DC e CPM 22 |
+| Créditos e final | Charlie Brown Jr. |
+| Modo História | AC/DC na estrada e na maratona, CPM 22 no parque e no Subway, Charlie Brown Jr. no pôr do sol da Prefeitura, Charlie Brown Jr. e CPM 22 na festa |
+
+A casa vazia, a derrota e a vitória continuam com o chiptune. Em **Opções → Trilha** dá para trocar para **8 bits** (só o chiptune). Se o navegador não tocar AAC, o jogo usa o chiptune sozinho.
+As músicas ficam em `assets/music/` e a lista em `js/musicmeta.js`, gerados por `python3 tools/importar_musicas.py <pasta com os originais>` (o script separa as coletâneas em músicas e iguala o volume).
+
 ## Modo História — "O Sumiço da Min"
 
 O Guti volta da China, ouve um grito da Min no celular e sai procurando por ela por Sorocaba, enfrentando os amigos pelo caminho: Pam, Belipe (bravo), Alex, Valeska, PV, Ana e, no fim, a Min numa luta amistosa de aniversário.
@@ -100,8 +115,8 @@ Os Fifis que não estão lutando aparecem torcendo no fundo.
 ## Estrutura
 
 - `assets/sprites2/`: quadros de animação de cada personagem (`js/sheetmeta2.js` guarda tamanho e âncora de cada um)
-- `assets/sprites/`: quadros dos model sheets antigos, usados quando falta algum quadro
-- `assets/fx/`: efeitos e ajudantes (`js/fxmeta.js`); `assets/stages/`: cenários; `assets/portraits/`: retratos
+- `assets/sprites/`: quadros dos model sheets antigos, usados só por personagens sem os quadros novos
+- `assets/fx/atlas.png`: efeitos e ajudantes numa folha só (`js/fxmeta.js`, gerados de `tools/fx_src/` por `python3 tools/empacotar_fx.py`); `assets/stages/`: cenários; `assets/portraits/`: retratos
 - `js/sheetsprites.js`: monta as animações a partir dos quadros e desenha os efeitos
 - `js/characters.js`: golpes, falas e atributos de cada personagem
 - `js/sprites.js` e `js/poses.js`: renderizador antigo por código, usado se alguma imagem não carregar
@@ -109,4 +124,4 @@ Os Fifis que não estão lutando aparecem torcendo no fundo.
 - `controle.html`, `js/controller.js` e `css/controller.css`: o controle no celular; `js/remote.js`: o lado do notebook (sala, QR code, P1/P2)
 - `js/vendor/`: PeerJS e gerador de QR code (licença MIT)
 - `js/story.js`: roteiro e cenas do Modo História; `tools/importar_historia.py`: importa as ilustrações
-- `js/stages.js`: cenários; `js/game.js`: telas e HUD; `js/audio.js`: sons e música chiptune (gerados por código)
+- `js/stages.js`: cenários; `js/game.js`: telas e HUD; `js/audio.js`: sons e chiptune (gerados por código) e a trilha com as bandas (`assets/music/`)

@@ -1,4 +1,5 @@
-// Áudio chiptune sintetizado com WebAudio (sem arquivos externos)
+// Áudio: efeitos e músicas chiptune sintetizados com WebAudio, e a trilha com músicas de verdade
+// (assets/music, lista em js/musicmeta.js), sorteadas de acordo com o momento do jogo.
 (function () {
   let ctx = null, master = null, musicGain = null, sfxGain = null;
   let musicTimer = null, musicStep = 0, currentSong = null, nextTime = 0;
@@ -6,6 +7,7 @@
   let volMusic = 0.7, volSfx = 0.8; // 0..1
 
   function init() {
+    if (track && track.el._pending) tryPlay(track);
     if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
     try {
       ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -124,25 +126,120 @@
     s.connect(fl); fl.connect(g); g.connect(musicGain); s.start(t); s.stop(t + 0.1);
   }
 
-  function playMusic(name) {
-    if (!ctx || currentSong === name) return;
-    currentSong = name; musicStep = 0; nextTime = ctx.currentTime + 0.05;
+  // ---- Trilha com bandas ----
+  // Cada momento do jogo sorteia uma música das bandas da lista (sem repetir até tocar todas);
+  // quando a música acaba, sorteia outra do mesmo momento. Sem a música (ou com a trilha "8 BITS"),
+  // toca o chiptune de sempre.
+  const TRACKS = window.MUSIC_META || [];
+  const AC = 'AC/DC', CPM = 'CPM 22', CBJ = 'CHARLIE BROWN JR.';
+  const POOLS = {
+    title: [CBJ, CPM],            // menus: clima de rolê
+    select: [AC], ladder: [AC],   // escolha de lutador e escada do arcade: aquecimento
+    fight: [AC, CPM],             // lutas
+    ending: [CBJ],                // créditos e final
+    hist_estrada: [AC],           // história: o Guti voando na estrada
+    hist_parque: [CPM], hist_maratona: [AC], hist_subway: [CPM],
+    hist_romance: [CBJ],          // Alex e Valeska na Prefeitura
+    hist_festa: [CBJ, CPM]        // a surpresa e o desafio de aniversário
+  };
+  // músicas de cenário (lutas) e o chiptune usado no lugar de cada momento da história
+  const STAGE_SONGS = ['parque', 'rua', 'prefeitura', 'subway', 'casa', 'etec', 'cinema'];
+  const CHIP = { hist_estrada: 'select', hist_parque: 'parque', hist_maratona: 'rua', hist_romance: 'prefeitura', hist_subway: 'subway', hist_festa: 'casa' };
+  let useBands = true, current = null, track = null, onTrack = null;
+  const bags = {};
+  let canAAC = null; // navegadores sem AAC (ex.: Chromium de código aberto) ficam com o chiptune
+  const playable = () => (canAAC === null ? (canAAC = (() => { try { return !!new Audio().canPlayType('audio/mp4; codecs="mp4a.40.2"'); } catch (e) { return false; } })()) : canAAC);
+  const poolOf = name => (playable() ? POOLS[name] || (STAGE_SONGS.includes(name) ? POOLS.fight : null) : null);
+  // sorteia a banda (todas com a mesma chance) e depois a música dela, sem repetir até tocar todas
+  function pick(name) {
+    const artists = (poolOf(name) || []).filter(a => TRACKS.some(t => t.artist === a));
+    if (!artists.length) return null;
+    const artist = artists[Math.floor(Math.random() * artists.length)];
+    const list = TRACKS.filter(t => t.artist === artist);
+    const bag = bags[artist] = bags[artist] || [];
+    if (!bag.length) { // embaralha de novo, sem começar pela última que tocou
+      const ids = list.map(t => t.id).sort(() => Math.random() - 0.5);
+      if (ids.length > 1 && ids[0] === bags[artist + ':last']) ids.push(ids.shift());
+      bag.push(...ids);
+    }
+    const id = bag.shift(); bags[artist + ':last'] = id;
+    return list.find(t => t.id === id);
+  }
+  // abaixo dos golpes: as gravações são bem mais altas que o chiptune
+  const trackVol = t => Math.min(1, (t.gain || 1) * volMusic * 0.6);
+  function fade(a, to, ms, done) {
+    clearInterval(a._fade);
+    const from = a.volume, t0 = performance.now();
+    a._fade = setInterval(() => {
+      const k = Math.min(1, (performance.now() - t0) / ms);
+      try { a.volume = from + (to - from) * k; } catch (e) { /* volume fixo (iPhone) */ }
+      if (k >= 1) { clearInterval(a._fade); if (done) done(); }
+    }, 40);
+  }
+  function stopTrack(ms) {
+    if (!track) return;
+    const a = track.el; track = null;
+    a.onended = a.onerror = null;
+    fade(a, 0, ms || 600, () => { a.pause(); a.removeAttribute('src'); a.load(); });
+  }
+  function startTrack(name) {
+    const t = pick(name); if (!t) return false;
+    const a = new Audio('assets/music/' + t.file);
+    a.preload = 'auto'; a.muted = muted; a.volume = 0;
+    const me = { el: a, t, name };
+    track = me;
+    a.onended = () => { if (track === me) { stopTrack(50); startTrack(name); } };
+    a.onerror = () => { if (track === me) { track = null; startChip(name); } }; // sem o arquivo: chiptune
+    a._pending = true;
+    tryPlay(me);
+    if (onTrack) onTrack(t);
+    return true;
+  }
+  // o navegador só deixa tocar depois de um clique/tecla: se recusar, tenta de novo no próximo gesto (init)
+  function tryPlay(me) {
+    const p = me.el.play();
+    const ok = () => { me.el._pending = false; fade(me.el, trackVol(me.t), 800); };
+    if (p && p.then) p.then(ok).catch(() => { me.el._pending = true; }); else ok();
+  }
+  function startChip(name) {
+    const song = SONGS[name] ? name : CHIP[name];
+    if (!song) { currentSong = null; return; }
+    currentSong = song; musicStep = 0; nextTime = ctx.currentTime + 0.05;
     if (!musicTimer) musicTimer = setInterval(scheduler, 50);
   }
-  function stopMusic() { currentSong = null; }
+  // fresh: começa outra música mesmo que o momento seja o mesmo (ex.: revanche)
+  function playMusic(name, fresh) {
+    if (!ctx || (current === name && !fresh)) return;
+    current = name;
+    stopTrack(); currentSong = null;
+    if (useBands && poolOf(name) && startTrack(name)) return;
+    startChip(name);
+  }
+  function stopMusic() { current = null; currentSong = null; stopTrack(); }
   function setVolumes(m, s) {
     volMusic = m; volSfx = s;
     if (musicGain) musicGain.gain.value = 0.32 * volMusic;
     if (sfxGain) sfxGain.gain.value = 0.75 * volSfx;
+    if (track && !track.el._pending) { clearInterval(track.el._fade); try { track.el.volume = trackVol(track.t); } catch (e) { /* volume fixo */ } }
   }
   function toggleMute() {
     muted = !muted;
     if (master) master.gain.value = muted ? 0 : 0.5;
+    if (track) track.el.muted = muted;
     return muted;
+  }
+  // trilha: true = bandas, false = só chiptune (8 bits)
+  function setBands(on) {
+    if (useBands === !!on) return;
+    useBands = !!on;
+    const name = current; current = null;
+    if (name) playMusic(name);
   }
 
   window.Sound = {
-    init, playMusic, stopMusic, toggleMute, setVolumes, isMuted: () => muted,
+    init, playMusic, stopMusic, toggleMute, setVolumes, setBands, isMuted: () => muted,
+    nowPlaying: () => (track ? track.t : null),
+    set onTrack(f) { onTrack = f; },
     play(name, arg) { if (ctx && SFX[name]) SFX[name](arg); }
   };
 })();

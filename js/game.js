@@ -35,7 +35,7 @@
   const navRight = () => Input.menuPressed(0, 'right') || Input.menuPressed(1, 'right');
 
   // ---------- Opções e recordes (salvos no navegador) ----------
-  const DEFAULT_OPTS = { music: 7, sfx: 8, rounds: 2, time: 99, difficulty: 2, shake: true, hitboxes: false };
+  const DEFAULT_OPTS = { music: 7, sfx: 8, bands: true, rounds: 2, time: 99, difficulty: 2, shake: true, hitboxes: false };
   const store = {
     load(k, d) { try { const v = localStorage.getItem(k); return v ? Object.assign({}, d, JSON.parse(v)) : Object.assign({}, d); } catch (e) { return Object.assign({}, d); } },
     save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* armazenamento indisponível */ } }
@@ -49,9 +49,17 @@
     save: store.load('fifi-save', { wins: {}, arcadeHigh: 0, clears: {} })
   };
   window.G = G;
-  function saveOpts() { store.save('fifi-opts', G.opts); Sound.setVolumes(G.opts.music / 10, G.opts.sfx / 10); }
+  if (G.opts.bands === undefined) G.opts.bands = true; // opções salvas antes da trilha com bandas
+  function saveOpts() { store.save('fifi-opts', G.opts); Sound.setVolumes(G.opts.music / 10, G.opts.sfx / 10); Sound.setBands(G.opts.bands); }
   function saveGame() { store.save('fifi-save', G.save); }
-  Sound.setVolumes(G.opts.music / 10, G.opts.sfx / 10);
+  Sound.setVolumes(G.opts.music / 10, G.opts.sfx / 10); Sound.setBands(G.opts.bands);
+  // aviso da música que começou (fora das lutas e da história)
+  Sound.onTrack = t => {
+    if (G.scene === 'fight' || G.scene === 'story') return;
+    const list = toastList();
+    list.push({ s: 'TOCANDO: ' + t.artist + (t.title ? ' - ' + t.title : ''), col: '#ffd400', t: 0 });
+    if (list.length > 3) list.shift();
+  };
 
   function go(scene) {
     G.scene = scene; G.t = 0; G.menu = { i: 0 };
@@ -248,6 +256,7 @@
     const O = G.opts;
     return [
       { label: 'MUSICA', value: () => ({ bar: O.music }), change: d => { O.music = Math.max(0, Math.min(10, O.music + d)); saveOpts(); } },
+      { label: 'TRILHA', value: () => (O.bands ? 'BANDAS' : '8 BITS'), change: () => { O.bands = !O.bands; saveOpts(); } },
       { label: 'EFEITOS SONOROS', value: () => ({ bar: O.sfx }), change: d => { O.sfx = Math.max(0, Math.min(10, O.sfx + d)); saveOpts(); Sound.play('hitLight'); } },
       { label: 'ROUNDS PARA VENCER', value: () => String(O.rounds), change: d => { O.rounds = cycle([1, 2, 3], O.rounds, d); saveOpts(); } },
       { label: 'TEMPO DO ROUND', value: () => O.time ? String(O.time) : 'INFINITO', change: d => { O.time = cycle([30, 60, 99, 0], O.time, d); saveOpts(); } },
@@ -292,10 +301,10 @@
   function options() {
     starBg('#0e1428', '#2a3a6a');
     T('OPCOES', W / 2, 10, '#ffd400', { scale: 2, align: 'center', shadow: '#000' });
-    panel(52, 34, 280, 120);
+    panel(52, 34, 280, 130);
     runMenu(optionItems(() => go('title')), G.menu, W / 2, 42, { w: 256, lh: 12 });
-    T('ESQUERDA/DIREITA MUDA   CHUTE OU ESC VOLTA', W / 2, 172, '#8a80a8', { align: 'center' });
-    T('AS OPCOES FICAM SALVAS NESTE NAVEGADOR', W / 2, 184, '#6a6088', { align: 'center' });
+    T('ESQUERDA/DIREITA MUDA   CHUTE OU ESC VOLTA', W / 2, 176, '#8a80a8', { align: 'center' });
+    T('AS OPCOES FICAM SALVAS NESTE NAVEGADOR', W / 2, 188, '#6a6088', { align: 'center' });
     if (backKey()) { Sound.play('select'); go('title'); }
   }
 
@@ -652,7 +661,7 @@
     if (G.mode === 'story' && window.Story) Story.onMatchStart(G);
     G.specCanvas = G.spectators.map(() => Sprites.newCanvas());
     go('fight');
-    Sound.playMusic(G.stage.music);
+    Sound.playMusic(G.stage.music, true); // toda luta sorteia outra música
     startRound();
   }
   function applyDummy() {
@@ -1014,7 +1023,7 @@
     }
     R(0, 0, W, H, 'rgba(0,0,0,0.55)');
     if (P.view === 'options') {
-      panel(52, 30, 280, 132, 'OPCOES');
+      panel(52, 30, 280, 140, 'OPCOES');
       runMenu(optionItems(back), P, W / 2, 46, { w: 256, lh: 12 });
       if (backKey() || pauseKey) { Sound.play('select'); back(); }
       return;
