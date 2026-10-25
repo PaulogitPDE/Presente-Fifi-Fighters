@@ -147,8 +147,8 @@
   const CHIP = { hist_estrada: 'select', hist_parque: 'parque', hist_maratona: 'rua', hist_romance: 'prefeitura', hist_subway: 'subway', hist_festa: 'casa' };
   let useBands = true, current = null, track = null, onTrack = null;
   const bags = {};
-  let canAAC = null; // navegadores sem AAC (ex.: Chromium de código aberto) ficam com o chiptune
-  const playable = () => (canAAC === null ? (canAAC = (() => { try { return !!new Audio().canPlayType('audio/mp4; codecs="mp4a.40.2"'); } catch (e) { return false; } })()) : canAAC);
+  let canMP3 = null; // navegador que não toca MP3 fica com o chiptune
+  const playable = () => (canMP3 === null ? (canMP3 = (() => { try { return !!new Audio().canPlayType('audio/mpeg'); } catch (e) { return false; } })()) : canMP3);
   const poolOf = name => (playable() ? POOLS[name] || (STAGE_SONGS.includes(name) ? POOLS.fight : null) : null);
   // sorteia a banda (todas com a mesma chance) e depois a música dela, sem repetir até tocar todas
   function pick(name) {
@@ -165,8 +165,8 @@
     const id = bag.shift(); bags[artist + ':last'] = id;
     return list.find(t => t.id === id);
   }
-  // abaixo dos golpes: as gravações são bem mais altas que o chiptune
-  const trackVol = t => Math.min(1, (t.gain || 1) * volMusic * 0.6);
+  // um pouco abaixo dos golpes: as gravações são bem mais altas que o chiptune
+  const trackVol = t => Math.min(1, (t.gain || 1) * volMusic * 0.95);
   function fade(a, to, ms, done) {
     clearInterval(a._fade);
     const from = a.volume, t0 = performance.now();

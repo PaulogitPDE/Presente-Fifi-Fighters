@@ -35,7 +35,7 @@ O jogo toca músicas de AC/DC, CPM 22 e Charlie Brown Jr., sempre sorteadas (a b
 | Créditos e final | Charlie Brown Jr. |
 | Modo História | AC/DC na estrada e na maratona, CPM 22 no parque e no Subway, Charlie Brown Jr. no pôr do sol da Prefeitura, Charlie Brown Jr. e CPM 22 na festa |
 
-A casa vazia, a derrota e a vitória continuam com o chiptune. Em **Opções → Trilha** dá para trocar para **8 bits** (só o chiptune). Se o navegador não tocar AAC, o jogo usa o chiptune sozinho.
+A casa vazia, a derrota e a vitória continuam com o chiptune. Em **Opções → Trilha** dá para trocar para **8 bits** (só o chiptune). As músicas são MP3, que todo navegador toca; se algum arquivo faltar, o jogo usa o chiptune naquele momento.
 As músicas ficam em `assets/music/` e a lista em `js/musicmeta.js`, gerados por `python3 tools/importar_musicas.py <pasta com os originais>` (o script separa as coletâneas em músicas e iguala o volume).
 
 ## Modo História — "O Sumiço da Min"
