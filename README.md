@@ -89,14 +89,14 @@ No fim de cada luta aparecem as estatísticas (golpes, dano, maior combo, especi
 
 | Lutador | Especiais | Super |
 |---|---|---|
-| **GUTI** (principal) | Pé de Pato da China · Kart 10:10 · Eu Nunca Estou Errado (contra-ataque) | Só o Guti Faz Pipoca |
-| **MIN** | Dadinho de Tapioca · Amora, Pega! · Portaria Facial (armadilha) | Eu Te Protejo |
-| **PV** | Enquete Suprema · Culpa do Paulo (devolve projéteis) · Costela de 12h (cura) | Enquete: Democracia |
-| **ANA** | Passando pra Avisar · Lista do Rolê · Amo Vcs (cura) | ARMY Stream |
-| **BELIPE** | Promete??? · Meia Maratona · Mensagem Apagada (desfaz o último golpe sofrido) | Abstinência de Fofoca |
+| **GUTI** (principal) | Pé de Pato da China · Ataque Drift · Eu Nunca Estou Errado (contra-ataque) | Chuva de Pipoca |
+| **MIN** | Dadinho de Tapioca · Amora, Pega! · Catraca de Academia (armadilha) | Raio da Culinária |
+| **PV** | Democracia · Culpa do Paulo (devolve projéteis) · Costela de 12h (cura) | Enquete: Democracia |
+| **ANA** | Ataque BTS · Checklist · Coração Kpop (cura) | ARMY Stream |
+| **BELIPE** | Eu Tô Certo · Meia Maratona · Apagar Mensagem (desfaz o último golpe sofrido) | Abstinência de Fofoca |
 | **PAM** | SKZ Fancam · Desculpinha (teleporte) · Monster Rush (buff) | Gatas Gêmeas |
 | **ALEX** | Haeee! · Ta-La-Ri-Ca · Febre Zomboid (veneno) | Fiel Torcida |
-| **VALESCA** | Cookie de Nutella · Ai que Ódio (voadora pra cima) · Vistoria do André (enfraquece) | #ValescaPraVereadora |
+| **VALESCA** | Cookie de Nutella · Ai que Ódio (voadora pra cima) · Ideia de Rolê (enfraquece) | #ValescaPraVereadora |
 
 Cada um tem as próprias animações, tiradas das folhas de sprites: parado, andando, pulo, guarda, chute, rasteira, voadora, gancho, dano, queda, levantando, um quadro para cada especial, vitória e entrada.
 Os projéteis, ajudantes (Amora, as gatas, a Fiel Torcida, a catraca da portaria), feixes, faíscas e o KO também são sprites.

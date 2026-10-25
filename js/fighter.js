@@ -825,7 +825,7 @@
     }
   }
 
-  class Trap { // Portaria Facial: portão de reconhecimento facial que nunca funciona
+  class Trap { // Catraca de Academia: catraca que dá choque em quem passa
     spriteReady() { return !!window.FX && FX.ready('gate'); }
     constructor(owner, d) {
       this.owner = owner; this.d = d; this.kind = 'trap';

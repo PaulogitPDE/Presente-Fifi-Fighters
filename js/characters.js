@@ -14,9 +14,9 @@ window.CHARACTERS = [
     home: 'casa', ending: "Guti provou que nunca esta errado. Comemorou com pipoca (so ele faz pipoca nessa casa) e pe de pato frito da China. A Amora segue roendo a estaca, planejando algo para a noite.",
     specials: {
       n: { desc: "Arremessa um pe de pato frito da China. Deixa o oponente atordoado.", name: 'Pe de Pato da China', type: 'projectile', pose: 'throw', startup: 12, recovery: 22, dmg: 80, speed: 4.2, fx: 'duckfoot', stun: 22, w: 14, h: 10 },
-      fwd: { desc: "Avanca de kart acertando 3 vezes. Atravessa a tela rapido.", name: 'Kart 10:10', type: 'rush', pose: 'rush', startup: 8, dur: 30, recovery: 18, speed: 5.4, dmg: 32, hits: 3, fx: 'kart' },
+      fwd: { desc: "Avanca de kart acertando 3 vezes. Atravessa a tela rapido.", name: 'Ataque Drift', type: 'rush', pose: 'rush', startup: 8, dur: 30, recovery: 18, speed: 5.4, dmg: 32, hits: 3, fx: 'kart' },
       down: { desc: "Postura de contra-ataque. Se for atacado, revida na hora.", name: 'Eu Nunca Estou Errado', type: 'counter', pose: 'counter', startup: 4, window: 34, recovery: 20, dmg: 130, text: 'EU NUNCA ESTOU ERRADO' },
-      super: { desc: "Chuva de pipoca cai em cima do oponente.", name: 'So o Guti Faz Pipoca', type: 'rain', pose: 'summon', startup: 20, recovery: 30, dmg: 45, count: 9, fx: 'popcorn' }
+      super: { desc: "Chuva de pipoca cai em cima do oponente.", name: 'Chuva de Pipoca', type: 'rain', pose: 'summon', startup: 20, recovery: 30, dmg: 45, count: 9, fx: 'popcorn' }
     }
   },
   {
@@ -33,8 +33,8 @@ window.CHARACTERS = [
     specials: {
       n: { desc: "Joga tres dadinhos de tapioca em leque.", name: 'Dadinho de Tapioca', type: 'projectile', pose: 'throw', startup: 10, recovery: 20, dmg: 30, speed: 4.6, fx: 'dadinho', count: 3, spread: 8, w: 7, h: 7 },
       fwd: { desc: "Chama a Amora, que corre e morde duas vezes.", name: 'Amora, Pega!', type: 'summon', pose: 'summon', startup: 14, recovery: 24, dmg: 45, hits: 2, entity: 'dog', speed: 4.4 },
-      down: { desc: "Instala o portao com reconhecimento facial. Quem passar leva choque.", name: 'Portaria Facial', type: 'trap', pose: 'push', startup: 12, recovery: 18, dmg: 90, dist: 70, life: 240, stun: 30 },
-      super: { desc: "Raio de arroz saido da panela. Acerta 10 vezes.", name: 'Eu Te Protejo', type: 'beam', pose: 'beam', startup: 22, dur: 50, recovery: 30, dmg: 28, hits: 10, fx: 'rice', color: '#ffffff', text: 'EU TE PROTEJO!' }
+      down: { desc: "Instala uma catraca de academia. Quem passar leva choque.", name: 'Catraca de Academia', type: 'trap', pose: 'push', startup: 12, recovery: 18, dmg: 90, dist: 70, life: 240, stun: 30 },
+      super: { desc: "Raio de arroz saido da panela. Acerta 10 vezes.", name: 'Raio da Culinaria', type: 'beam', pose: 'beam', startup: 22, dur: 50, recovery: 30, dmg: 28, hits: 10, fx: 'rice', color: '#ffffff', text: 'RAIO DA CULINARIA!' }
     }
   },
   {
@@ -49,7 +49,7 @@ window.CHARACTERS = [
     vs: {"belipe": {"intro": "Cara, hoje era pra vc chegar na hora, meu.", "win": "Roubei o relogio dele."}, "alex": {"intro": "Casa do alex?"}, "ana": {"intro": "A Ana que fez o convite, galera.", "lose": "Mas a Ana nao deixa."}, "pam": {"win": "Mae da Pamela me adotou."}},
     home: 'cozinha', ending: "PV venceu e recorreu a democracia: enquete unanime, churrasco com costela de 12h e cafe com vodka no domingo. Pela primeira vez na historia do grupo, a culpa nao foi dele.",
     specials: {
-      n: { desc: "Lanca uma enquete que atordoa por bastante tempo.", name: 'Enquete Suprema', type: 'projectile', pose: 'push', startup: 14, recovery: 22, dmg: 70, speed: 3.2, fx: 'poll', stun: 28, w: 16, h: 14 },
+      n: { desc: "Lanca uma enquete que atordoa por bastante tempo.", name: 'Democracia', type: 'projectile', pose: 'push', startup: 14, recovery: 22, dmg: 70, speed: 3.2, fx: 'poll', stun: 28, w: 16, h: 14 },
       fwd: { desc: "Contra-ataque que devolve projeteis. A culpa volta para quem jogou.", name: 'Culpa do Paulo', type: 'counter', pose: 'counter', startup: 4, window: 36, recovery: 20, dmg: 120, reflect: true, text: 'A CULPA E DE QUEM?' },
       down: { desc: "Come uma costela de 12h e recupera vida. Tem recarga.", name: 'Costela de 12h', type: 'heal', pose: 'eat', startup: 18, recovery: 30, amount: 90, prop: 'costela' },
       super: { desc: "Rajada de 7 enquetes. Democracia em estado puro.", name: 'Enquete: Democracia', type: 'volley', pose: 'beam', startup: 22, recovery: 34, dmg: 40, count: 7, fx: 'poll', speed: 5, text: 'DEMOCRACIA!' }
@@ -67,9 +67,9 @@ window.CHARACTERS = [
     vs: {"pv": {"intro": "Desiste amor kkskks.", "win": "Libera o preso? Nao."}, "pam": {"intro": "Passando pra avisar: e obrigatorio, Pam."}},
     home: 'parque', ending: "Ana venceu, fez a lista de quem leva o que e o evento continua obrigatorio. Pela primeira vez nao teve furacao, eleicao nem crianca nascendo no dia. Amo vcs @",
     specials: {
-      n: { desc: "Balao de aviso que atordoa e cancela o ataque do oponente.", name: 'Passando pra Avisar', type: 'projectile', pose: 'push', startup: 12, recovery: 20, dmg: 60, speed: 3.6, fx: 'bubble', text: 'AVISO!', stun: 30, w: 20, h: 12 },
-      fwd: { desc: "Joga tres itens da lista do role em arco.", name: 'Lista do Role', type: 'projectile', pose: 'throw', startup: 12, recovery: 22, dmg: 35, speed: 3.4, fx: 'items', count: 3, arc: true, w: 8, h: 8 },
-      down: { desc: "Recupera vida mandando amor para todos. Tem recarga.", name: 'Amo Vcs', type: 'heal', pose: 'taunt', startup: 16, recovery: 26, amount: 80, hearts: true },
+      n: { desc: "Balao de aviso que atordoa e cancela o ataque do oponente.", name: 'Ataque BTS', type: 'projectile', pose: 'push', startup: 12, recovery: 20, dmg: 60, speed: 3.6, fx: 'bubble', text: 'AVISO!', stun: 30, w: 20, h: 12 },
+      fwd: { desc: "Joga tres itens do checklist em arco.", name: 'Checklist', type: 'projectile', pose: 'throw', startup: 12, recovery: 22, dmg: 35, speed: 3.4, fx: 'items', count: 3, arc: true, w: 8, h: 8 },
+      down: { desc: "Recupera vida mandando amor para todos. Tem recarga.", name: 'Coracao Kpop', type: 'heal', pose: 'taunt', startup: 16, recovery: 26, amount: 80, hearts: true },
       super: { desc: "Feixe roxo de ARMY. Acerta 10 vezes.", name: 'ARMY Stream', type: 'beam', pose: 'beam', startup: 22, dur: 50, recovery: 30, dmg: 28, hits: 10, fx: 'army', color: '#b06cff', text: 'BORAHAE!' }
     }
   },
@@ -85,9 +85,9 @@ window.CHARACTERS = [
     vs: {"pv": {"intro": "A culpa e do pv entao?", "win": "Vamos voltar a culpar o Pv."}, "pam": {"intro": "Oq se passa na cabeca da Pamela????"}, "guti": {"intro": "Cada um pode ter o seu guti? Ou todos sao da Min???"}, "min": {"intro": "Promete???"}, "alex": {"intro": "Oiiiii lelek. Sera q ele vai???"}},
     home: 'subway', ending: "Belipe venceu e, como sempre, tinha razao smp. Chegou atrasado na premiacao porque marcou cabelo 10:30, mas trouxe fofoca fresca e a churrasqueira de volta do PV.",
     specials: {
-      n: { desc: "Lanca um \"???\" que atordoa por um bom tempo.", name: 'Promete???', type: 'projectile', pose: 'taunt', startup: 10, recovery: 20, dmg: 50, speed: 3.8, fx: 'text', text: '???', stun: 34, w: 18, h: 10 },
+      n: { desc: "Lanca um \"???\" que atordoa por um bom tempo.", name: 'Eu To Certo', type: 'projectile', pose: 'taunt', startup: 10, recovery: 20, dmg: 50, speed: 3.8, fx: 'text', text: '???', stun: 34, w: 18, h: 10 },
       fwd: { desc: "Corrida de meia maratona acertando 3 vezes.", name: 'Meia Maratona', type: 'rush', pose: 'rush', startup: 6, dur: 34, recovery: 16, speed: 6.4, dmg: 30, hits: 3, fx: 'dust' },
-      down: { desc: "Apaga a mensagem e recupera o ultimo dano recebido.", name: 'Mensagem Apagada', type: 'undo', pose: 'taunt', startup: 10, recovery: 22, text: 'MENSAGEM APAGADA' },
+      down: { desc: "Apaga a mensagem e recupera o ultimo dano recebido.", name: 'Apagar Mensagem', type: 'undo', pose: 'taunt', startup: 10, recovery: 22, text: 'APAGAR MENSAGEM' },
       super: { desc: "Investida de fofoca com 9 golpes de KKKKKKK.", name: 'Abstinencia de Fofoca', type: 'rush', pose: 'rush', startup: 18, dur: 46, recovery: 26, speed: 6, dmg: 34, hits: 9, fx: 'kkk', text: 'KKKKKKKKK', super: true }
     }
   },
@@ -141,7 +141,7 @@ window.CHARACTERS = [
     specials: {
       n: { desc: "Cookie de Nutella arremessado como frisbee.", name: 'Cookie de Nutella', type: 'projectile', pose: 'throw', startup: 11, recovery: 20, dmg: 75, speed: 4.2, fx: 'cookie', w: 10, h: 10 },
       fwd: { desc: "Voadora para cima: AI QUE ODIO. Otima contra pulos.", name: 'Ai que Odio', type: 'rising', pose: 'rising', startup: 4, recovery: 22, dmg: 110, vy: -7.2, vx: 2, text: 'AI QUE ODIO' },
-      down: { desc: "Vistoria do Andre: o oponente atingido recebe mais dano por um tempo.", name: 'Vistoria do Andre', type: 'debuff', pose: 'push', startup: 12, recovery: 20, dur: 300, speed: 3, fx: 'clipboard', w: 12, h: 12, dmg: 20 },
+      down: { desc: "Ideia de role: o oponente atingido recebe mais dano por um tempo.", name: 'Ideia de Role', type: 'debuff', pose: 'push', startup: 12, recovery: 20, dur: 300, speed: 3, fx: 'clipboard', w: 12, h: 12, dmg: 20 },
       super: { desc: "Campanha #ValescaPraVereadora, feixe dourado com 10 golpes.", name: '#ValescaPraVereadora', type: 'beam', pose: 'beam', startup: 22, dur: 50, recovery: 30, dmg: 28, hits: 10, fx: 'vote', color: '#ffd400', text: 'VOTE VALESCA!' }
     }
   }
